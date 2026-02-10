@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>グリッドエディタ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-panel: #1e2a45;
+      --accent: #e94560;
+      --accent-dim: #c73a52;
+      --text: #eaeaea;
+      --text-dim: #8899aa;
+      --border: #2a3a55;
+      --cell-hover: rgba(233,69,96,0.12);
+      --cell-selected: rgba(233,69,96,0.22);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== ヘッダー ===== */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .app-title .icon { color: var(--accent); font-size: 22px; }
+    .header-actions { display: flex; gap: 8px; }
+
+    /* ===== ボタン共通 ===== */
+    .btn {
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-panel);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn:hover { border-color: var(--accent); background: rgba(233,69,96,0.1); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+    .btn-primary:hover { background: var(--accent-dim); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* ===== メインレイアウト ===== */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ===== サイドパネル ===== */
+    .side-panel {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-section:last-child { border-bottom: none; }
+    .panel-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    /* ===== フォーム部品 ===== */
+    .form-row { margin-bottom: 10px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-row label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    textarea.cell-text-input {
+      width: 100%;
+      min-height: 80px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-primary);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea.cell-text-input:focus { outline: none; border-color: var(--accent); }
+    select, input[type="number"], input[type="color"], input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-primary);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+    }
+    select:focus, input:focus { outline: none; border-color: var(--accent); }
+    input[type="color"] { height: 34px; padding: 2px 4px; cursor: pointer; }
+
+    /* トグルボタングループ */
+    .toggle-group {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 6px 0;
+      border: none;
+      background: var(--bg-primary);
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .toggle-btn + .toggle-btn { border-left: 1px solid var(--border); }
+    .toggle-btn.active { background: var(--accent); color: #fff; }
+    .toggle-btn:hover:not(.active) { background: rgba(233,69,96,0.1); color: var(--text); }
+
+    /* ===== プレビューエリア ===== */
+    .preview-area {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      background: #111;
+    }
+    .preview-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .bg-layer {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .grid-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* ===== グリッド行 ===== */
+    .grid-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+      aspect-ratio: 3 / 1;
+    }
+    .grid-cell {
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: outline 0.15s;
+      outline: 2px solid transparent;
+      display: flex;
+    }
+    .grid-cell:hover { outline-color: rgba(233,69,96,0.4); }
+    .grid-cell.selected { outline-color: var(--accent); }
+    .grid-cell:nth-child(1),
+    .grid-cell:nth-child(3) { background: transparent; }
+    .grid-cell:nth-child(2) { background: rgba(255,255,255,0.5); }
+
+    .cell-content {
+      width: 100%;
+      height: 100%;
+      padding: 12px;
+      display: flex;
+      overflow: hidden;
+      word-break: break-word;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .cell-content.h-write { writing-mode: horizontal-tb; }
+    .cell-content.v-write { writing-mode: vertical-rl; }
+    .cell-content.align-left   { justify-content: flex-start; text-align: left; }
+    .cell-content.align-center { justify-content: center; text-align: center; }
+    .cell-content.align-right  { justify-content: flex-end; text-align: right; }
+    .cell-content.v-write.align-left   { align-items: flex-start; }
+    .cell-content.v-write.align-center { align-items: center; }
+    .cell-content.v-write.align-right  { align-items: flex-end; }
+    .cell-content.valign-top    { align-items: flex-start; }
+    .cell-content.valign-middle { align-items: center; }
+    .cell-content.valign-bottom { align-items: flex-end; }
+    .cell-content.v-write.valign-top    { justify-content: flex-start; }
+    .cell-content.v-write.valign-middle { justify-content: center; }
+    .cell-content.v-write.valign-bottom { justify-content: flex-end; }
+
+    /* セル番号バッジ */
+    .cell-badge {
+      position: absolute;
+      top: 4px; left: 4px;
+      font-size: 9px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      padding: 1px 5px;
+      border-radius: 3px;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* ===== 背景画像プレビュー ===== */
+    .bg-preview-box {
+      width: 100%;
+      height: 80px;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: var(--bg-primary);
+      cursor: pointer;
+      position: relative;
+    }
+    .bg-preview-box img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .bg-preview-box .placeholder {
+      font-size: 12px; color: var(--text-dim); text-align: center; padding: 8px;
+    }
+    .bg-remove-btn {
+      position: absolute;
+      top: 4px; right: 4px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px; height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .bg-preview-box:hover .bg-remove-btn { display: flex; }
+
+    /* ===== フォント選択 ===== */
+    .font-option-serif { font-family: 'Noto Serif JP', serif; }
+    .font-option-sans  { font-family: 'Noto Sans JP', sans-serif; }
+
+    /* ===== 空状態 ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 40px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+    .empty-state .icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    /* ===== エクスポート用非表示 ===== */
+    .export-mode .cell-badge,
+    .export-mode .grid-cell { outline: none !important; cursor: default; }
+
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 900px) {
+      .app-body { flex-direction: column; }
+      .side-panel { width: 100%; max-height: 300px; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="app-title">
+      <span class="icon">⊞</span> グリッドエディタ
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="exportHTML()">📄 HTMLエクスポート</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- サイドパネル -->
+    <aside class="side-panel" id="sidePanel">
+      <!-- 背景画像 -->
+      <div class="panel-section">
+        <div class="panel-label">🖼 背景画像（固定）</div>
+        <div class="bg-preview-box" onclick="document.getElementById('bgInput').click()">
+          <div class="placeholder" id="bgPlaceholder">クリックして画像を選択</div>
+          <img id="bgPreviewImg" style="display:none" />
+          <button class="bg-remove-btn" onclick="event.stopPropagation(); removeBg()">✕</button>
+        </div>
+        <input type="file" id="bgInput" accept="image/*" hidden />
+      </div>
+
+      <!-- セル編集パネル（セル選択時に表示） -->
+      <div id="cellEditor" style="display:none;">
+        <div class="panel-section">
+          <div class="panel-label" id="cellEditorTitle">📝 セル編集</div>
+          <div class="form-row">
+            <label>テキスト</label>
+            <textarea class="cell-text-input" id="cellText" placeholder="テキストを入力…"></textarea>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-label">文字方向</div>
+          <div class="form-row">
+            <div class="toggle-group" id="writingMode">
+              <button class="toggle-btn active" data-val="h">横書き</button>
+              <button class="toggle-btn" data-val="v">縦書き</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-label">配置</div>
+          <div class="form-row">
+            <label>横揃え</label>
+            <div class="toggle-group" id="hAlign">
+              <button class="toggle-btn active" data-val="left">左</button>
+              <button class="toggle-btn" data-val="center">中央</button>
+              <button class="toggle-btn" data-val="right">右</button>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:8px;">
+            <label>縦揃え</label>
+            <div class="toggle-group" id="vAlign">
+              <button class="toggle-btn" data-val="top">上</button>
+              <button class="toggle-btn active" data-val="middle">中央</button>
+              <button class="toggle-btn" data-val="bottom">下</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-label">フォント</div>
+          <div class="form-row">
+            <label>書体</label>
+            <select id="fontFamily">
+              <option value="'Noto Sans JP', sans-serif">ゴシック体</option>
+              <option value="'Noto Serif JP', serif">明朝体</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>サイズ (px)</label>
+            <input type="number" id="fontSize" value="16" min="8" max="120" step="1" />
+          </div>
+          <div class="form-row">
+            <label>太さ</label>
+            <select id="fontWeight">
+              <option value="300">Light</option>
+              <option value="400" selected>Regular</option>
+              <option value="500">Medium</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>文字色</label>
+            <input type="color" id="fontColor" value="#333333" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 未選択時 -->
+      <div id="emptyEditor" class="panel-section">
+        <div class="empty-state">
+          <div class="icon">👆</div>
+          <p>セルをクリックして<br>編集を開始します</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- プレビュー -->
+    <main class="preview-area" id="previewArea">
+      <div class="preview-wrapper">
+        <div class="bg-layer" id="bgLayer"></div>
+        <div class="grid-container" id="gridContainer"></div>
+      </div>
+    </main>
+  </div>
+
+  <input type="file" id="bgInput2" accept="image/*" hidden />
+
+  <script>
+    // ===== データモデル =====
+    const ROWS = 36;
+    const COLS = 3;
+    const cellData = [];
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        cellData.push({
+          row: r, col: c,
+          text: '',
+          writingMode: 'h', // h | v
+          hAlign: 'left',
+          vAlign: 'middle',
+          fontFamily: "'Noto Sans JP', sans-serif",
+          fontSize: 16,
+          fontWeight: '400',
+          fontColor: '#333333',
+        });
+      }
+    }
+
+    let selectedIdx = -1;
+    let bgDataUrl = '';
+
+    // ===== グリッド構築 =====
+    function buildGrid() {
+      const container = document.getElementById('gridContainer');
+      container.innerHTML = '';
+      for (let r = 0; r < ROWS; r++) {
+        const row = document.createElement('div');
+        row.className = 'grid-row';
+        for (let c = 0; c < COLS; c++) {
+          const idx = r * COLS + c;
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          cell.dataset.idx = idx;
+          cell.onclick = () => selectCell(idx);
+
+          const badge = document.createElement('div');
+          badge.className = 'cell-badge';
+          badge.textContent = `${r+1}-${c+1}`;
+
+          const content = document.createElement('div');
+          content.className = 'cell-content';
+          content.id = `content-${idx}`;
+
+          cell.appendChild(badge);
+          cell.appendChild(content);
+          row.appendChild(cell);
+        }
+        container.appendChild(row);
+      }
+    }
+
+    // ===== セル描画 =====
+    function renderCell(idx) {
+      const d = cellData[idx];
+      const el = document.getElementById(`content-${idx}`);
+      if (!el) return;
+
+      el.textContent = d.text;
+      el.className = 'cell-content';
+      el.classList.add(d.writingMode === 'v' ? 'v-write' : 'h-write');
+      el.classList.add(`align-${d.hAlign}`);
+      el.classList.add(`valign-${d.vAlign}`);
+      el.style.fontFamily = d.fontFamily;
+      el.style.fontSize = d.fontSize + 'px';
+      el.style.fontWeight = d.fontWeight;
+      el.style.color = d.fontColor;
+    }
+
+    function renderAll() {
+      cellData.forEach((_, i) => renderCell(i));
+    }
+
+    // ===== セル選択 =====
+    function selectCell(idx) {
+      // 前の選択を外す
+      document.querySelectorAll('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
+
+      selectedIdx = idx;
+      const cell = document.querySelector(`.grid-cell[data-idx="${idx}"]`);
+      if (cell) cell.classList.add('selected');
+
+      const d = cellData[idx];
+      document.getElementById('cellEditor').style.display = '';
+      document.getElementById('emptyEditor').style.display = 'none';
+      document.getElementById('cellEditorTitle').textContent = `📝 セル ${d.row+1}-${d.col+1}`;
+
+      // フォームに値を反映
+      document.getElementById('cellText').value = d.text;
+      setToggle('writingMode', d.writingMode);
+      setToggle('hAlign', d.hAlign);
+      setToggle('vAlign', d.vAlign);
+      document.getElementById('fontFamily').value = d.fontFamily;
+      document.getElementById('fontSize').value = d.fontSize;
+      document.getElementById('fontWeight').value = d.fontWeight;
+      document.getElementById('fontColor').value = d.fontColor;
+
+      document.getElementById('cellText').focus();
+    }
+
+    function deselectCell() {
+      document.querySelectorAll('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
+      selectedIdx = -1;
+      document.getElementById('cellEditor').style.display = 'none';
+      document.getElementById('emptyEditor').style.display = '';
+    }
+
+    // ===== トグルグループ =====
+    function setToggle(groupId, val) {
+      const btns = document.querySelectorAll(`#${groupId} .toggle-btn`);
+      btns.forEach(b => b.classList.toggle('active', b.dataset.val === val));
+    }
+
+    function initToggleGroup(groupId, field) {
+      const btns = document.querySelectorAll(`#${groupId} .toggle-btn`);
+      btns.forEach(b => {
+        b.onclick = () => {
+          btns.forEach(x => x.classList.remove('active'));
+          b.classList.add('active');
+          if (selectedIdx >= 0) {
+            cellData[selectedIdx][field] = b.dataset.val;
+            renderCell(selectedIdx);
+          }
+        };
+      });
+    }
+
+    // ===== 入力バインド =====
+    function bindInput(elId, field, transform) {
+      const el = document.getElementById(elId);
+      const evt = el.tagName === 'TEXTAREA' ? 'input' : 'change';
+      el.addEventListener(evt, () => {
+        if (selectedIdx < 0) return;
+        cellData[selectedIdx][field] = transform ? transform(el.value) : el.value;
+        renderCell(selectedIdx);
+      });
+    }
+
+    // ===== 背景画像 =====
+    function initBg() {
+      const input = document.getElementById('bgInput');
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          bgDataUrl = ev.target.result;
+          applyBg();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function applyBg() {
+      const layer = document.getElementById('bgLayer');
+      const img = document.getElementById('bgPreviewImg');
+      const ph = document.getElementById('bgPlaceholder');
+      if (bgDataUrl) {
+        layer.style.backgroundImage = `url(${bgDataUrl})`;
+        img.src = bgDataUrl;
+        img.style.display = '';
+        ph.style.display = 'none';
+      } else {
+        layer.style.backgroundImage = '';
+        img.style.display = 'none';
+        ph.style.display = '';
+      }
+    }
+
+    function removeBg() {
+      bgDataUrl = '';
+      document.getElementById('bgInput').value = '';
+      applyBg();
+    }
+
+    // ===== HTMLエクスポート =====
+    function exportHTML() {
+      let bgCSS = '';
+      if (bgDataUrl) {
+        bgCSS = `
+    .bg-layer {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url(${bgDataUrl});
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      z-index: 0;
+    }`;
+      }
+
+      let cellsHTML = '';
+      for (let r = 0; r < ROWS; r++) {
+        cellsHTML += `    <div class="grid-row" style="--w:2; --h:1;">\n`;
+        for (let c = 0; c < COLS; c++) {
+          const d = cellData[r * COLS + c];
+          const wm = d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '';
+          const ha = d.hAlign === 'center' ? 'text-align:center;justify-content:center;'
+                   : d.hAlign === 'right'  ? 'text-align:right;justify-content:flex-end;'
+                   : 'text-align:left;justify-content:flex-start;';
+          const va = d.vAlign === 'top' ? 'align-items:flex-start;'
+                   : d.vAlign === 'bottom' ? 'align-items:flex-end;'
+                   : 'align-items:center;';
+          const style = `font-family:${d.fontFamily};font-size:${d.fontSize}px;font-weight:${d.fontWeight};color:${d.fontColor};${wm}${ha}${va}`;
+          const text = d.text ? escapeHTML(d.text) : `<!-- コンテンツ ${r+1}-${c+1} -->`;
+          cellsHTML += `      <div class="grid-item" style="grid-column: span 4;">\n`;
+          cellsHTML += `        <div class="grid-item-inner" style="${style}">\n`;
+          cellsHTML += `          ${text}\n`;
+          cellsHTML += `        </div>\n`;
+          cellsHTML += `      </div>\n`;
+        }
+        cellsHTML += `    </div>\n`;
+      }
+
+      const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>グリッドレイアウト</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      font-family: 'Noto Sans JP', sans-serif;
+      background:#f5f5f5;
+    }${bgCSS}
+    .container{
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .grid-row{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+      aspect-ratio: var(--w) / var(--h);
+    }
+    .grid-item{
+      background: transparent;
+      border-radius: 10px;
+      overflow:hidden;
+    }
+    .grid-item:nth-child(3n+2){
+      background: rgba(255,255,255,0.5);
+    }
+    .grid-item > img{
+      width:100%; height:100%; object-fit: cover; display:block;
+    }
+    .grid-item-inner{
+      width:100%; height:100%;
+      display:flex;
+      padding: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    @media (max-width: 768px){
+      .grid-row{ grid-template-columns: 1fr !important; aspect-ratio:auto; }
+      .grid-item{ aspect-ratio: var(--w) / var(--h); }
+    }
+  </style>
+</head>
+<body>
+  ${bgDataUrl ? '<div class="bg-layer"></div>' : ''}
+  <div class="container">
+${cellsHTML}  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '3retu36Ptemp.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+
+    // ===== 初期化 =====
+    function init() {
+      buildGrid();
+      renderAll();
+      initBg();
+
+      initToggleGroup('writingMode', 'writingMode');
+      initToggleGroup('hAlign', 'hAlign');
+      initToggleGroup('vAlign', 'vAlign');
+
+      bindInput('cellText', 'text');
+      bindInput('fontFamily', 'fontFamily');
+      bindInput('fontSize', 'fontSize', v => parseInt(v) || 16);
+      bindInput('fontWeight', 'fontWeight');
+      bindInput('fontColor', 'fontColor');
+
+      // プレビュー空白クリックで選択解除
+      document.getElementById('previewArea').addEventListener('click', (e) => {
+        if (!e.target.closest('.grid-cell')) deselectCell();
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
