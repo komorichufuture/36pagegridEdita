@@ -174,16 +174,6 @@
       width: 100%;
       max-width: 1200px;
     }
-    .bg-layer {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      z-index: 0;
-      pointer-events: none;
-    }
     .grid-container {
       position: relative;
       z-index: 1;
@@ -230,9 +220,9 @@
     .cell-content.align-left   { justify-content: flex-start; text-align: left; }
     .cell-content.align-center { justify-content: center; text-align: center; }
     .cell-content.align-right  { justify-content: flex-end; text-align: right; }
-    .cell-content.v-write.align-left   { align-items: flex-start; }
+    .cell-content.v-write.align-left   { align-items: flex-end; }
     .cell-content.v-write.align-center { align-items: center; }
-    .cell-content.v-write.align-right  { align-items: flex-end; }
+    .cell-content.v-write.align-right  { align-items: flex-start; }
     .cell-content.valign-top    { align-items: flex-start; }
     .cell-content.valign-middle { align-items: center; }
     .cell-content.valign-bottom { align-items: flex-end; }
@@ -253,46 +243,82 @@
       opacity: 0.6;
     }
 
-    /* ===== 背景画像プレビュー ===== */
-    .bg-preview-box {
-      width: 100%;
-      height: 80px;
-      border: 1px dashed var(--border);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-bottom: 8px;
-      background: var(--bg-primary);
-      cursor: pointer;
-      position: relative;
-    }
-    .bg-preview-box img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    .bg-preview-box .placeholder {
-      font-size: 12px; color: var(--text-dim); text-align: center; padding: 8px;
-    }
-    .bg-remove-btn {
-      position: absolute;
-      top: 4px; right: 4px;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 20px; height: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    .bg-preview-box:hover .bg-remove-btn { display: flex; }
-
     /* ===== フォント選択 ===== */
     .font-option-serif { font-family: 'Noto Serif JP', serif; }
     .font-option-sans  { font-family: 'Noto Sans JP', sans-serif; }
+
+    /* ===== マークダウン描画 ===== */
+    .cell-content.md-rendered h1 { font-size: 1.6em; font-weight: 700; margin: 0.3em 0; line-height: 1.3; }
+    .cell-content.md-rendered h2 { font-size: 1.35em; font-weight: 700; margin: 0.3em 0; line-height: 1.3; }
+    .cell-content.md-rendered h3 { font-size: 1.15em; font-weight: 700; margin: 0.25em 0; line-height: 1.3; }
+    .cell-content.md-rendered h4 { font-size: 1em; font-weight: 700; margin: 0.2em 0; }
+    .cell-content.md-rendered p { margin: 0.3em 0; }
+    .cell-content.md-rendered strong { font-weight: 700; }
+    .cell-content.md-rendered em { font-style: italic; }
+    .cell-content.md-rendered code {
+      background: rgba(128,128,128,0.2);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    .cell-content.md-rendered pre {
+      background: rgba(0,0,0,0.25);
+      padding: 8px 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 0.4em 0;
+      white-space: pre-wrap;
+    }
+    .cell-content.md-rendered pre code {
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+    .cell-content.md-rendered ul, .cell-content.md-rendered ol {
+      padding-left: 1.5em;
+      margin: 0.3em 0;
+    }
+    .cell-content.md-rendered li { margin: 0.15em 0; }
+    .cell-content.md-rendered blockquote {
+      border-left: 3px solid var(--accent, #e94560);
+      padding-left: 10px;
+      margin: 0.4em 0;
+      opacity: 0.85;
+    }
+    .cell-content.md-rendered hr {
+      border: none;
+      border-top: 1px solid rgba(128,128,128,0.4);
+      margin: 0.5em 0;
+    }
+    .cell-content.md-rendered a {
+      color: #5ba8ff;
+      text-decoration: underline;
+    }
+    .cell-content.md-rendered img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+    .cell-content.md-rendered {
+      white-space: normal;
+    }
+    .cell-content.md-rendered .md-inner {
+      width: 100%;
+    }
+
+    /* MDモードバッジ */
+    .md-badge {
+      position: absolute;
+      top: 4px; right: 4px;
+      font-size: 8px;
+      background: rgba(91,168,255,0.5);
+      color: #fff;
+      padding: 1px 4px;
+      border-radius: 3px;
+      pointer-events: none;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
 
     /* ===== 空状態 ===== */
     .empty-state {
@@ -337,12 +363,13 @@
       <!-- 背景画像 -->
       <div class="panel-section">
         <div class="panel-label">🖼 背景画像（固定）</div>
-        <div class="bg-preview-box" onclick="document.getElementById('bgInput').click()">
-          <div class="placeholder" id="bgPlaceholder">クリックして画像を選択</div>
-          <img id="bgPreviewImg" style="display:none" />
-          <button class="bg-remove-btn" onclick="event.stopPropagation(); removeBg()">✕</button>
+        <div class="form-row">
+          <label>画像パス（エクスポート用）</label>
+          <input type="text" id="bgExportPath" placeholder="例: images/bg.jpg  /img/bg.png  https://…" />
         </div>
-        <input type="file" id="bgInput" accept="image/*" hidden />
+        <div style="font-size:10px; color:var(--text-dim); margin-top:4px; line-height:1.4;">
+          ※ 相対パス・絶対パス・URLを指定できます。<br>未入力の場合、背景なしで出力されます。
+        </div>
       </div>
 
       <!-- セル編集パネル（セル選択時に表示） -->
@@ -352,6 +379,19 @@
           <div class="form-row">
             <label>テキスト</label>
             <textarea class="cell-text-input" id="cellText" placeholder="テキストを入力…"></textarea>
+          </div>
+          <div class="form-row">
+            <label>入力モード</label>
+            <div class="toggle-group" id="inputMode">
+              <button class="toggle-btn active" data-val="plain">プレーン</button>
+              <button class="toggle-btn" data-val="md">マークダウン</button>
+            </div>
+          </div>
+          <div id="mdHelp" style="display:none; margin-top:6px; font-size:11px; color:var(--text-dim); line-height:1.5; padding:6px 8px; background:var(--bg-primary); border-radius:5px;">
+            <b># 見出し</b>　<b>**太字**</b>　<b>*斜体*</b><br>
+            <b>- リスト</b>　<b>1. 番号リスト</b><br>
+            <b>`コード`</b>　<b>> 引用</b>　<b>---</b><br>
+            <b>[リンク](URL)</b>　<b>![画像](URL)</b>
           </div>
         </div>
 
@@ -426,13 +466,10 @@
     <!-- プレビュー -->
     <main class="preview-area" id="previewArea">
       <div class="preview-wrapper">
-        <div class="bg-layer" id="bgLayer"></div>
         <div class="grid-container" id="gridContainer"></div>
       </div>
     </main>
   </div>
-
-  <input type="file" id="bgInput2" accept="image/*" hidden />
 
   <script>
     // ===== データモデル =====
@@ -444,6 +481,7 @@
         cellData.push({
           row: r, col: c,
           text: '',
+          inputMode: 'plain', // plain | md
           writingMode: 'h', // h | v
           hAlign: 'left',
           vAlign: 'middle',
@@ -456,7 +494,6 @@
     }
 
     let selectedIdx = -1;
-    let bgDataUrl = '';
 
     // ===== グリッド構築 =====
     function buildGrid() {
@@ -476,11 +513,18 @@
           badge.className = 'cell-badge';
           badge.textContent = `${r+1}-${c+1}`;
 
+          const mdBadge = document.createElement('div');
+          mdBadge.className = 'md-badge';
+          mdBadge.id = `md-badge-${idx}`;
+          mdBadge.textContent = 'MD';
+          mdBadge.style.display = 'none';
+
           const content = document.createElement('div');
           content.className = 'cell-content';
           content.id = `content-${idx}`;
 
           cell.appendChild(badge);
+          cell.appendChild(mdBadge);
           cell.appendChild(content);
           row.appendChild(cell);
         }
@@ -488,13 +532,126 @@
       }
     }
 
+    // ===== マークダウンパーサー =====
+    function parseMD(src) {
+      // エスケープHTML
+      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+      let html = '';
+      const lines = src.split('\n');
+      let i = 0;
+      let inUl = false, inOl = false;
+
+      function closeList() {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (inOl) { html += '</ol>'; inOl = false; }
+      }
+
+      // インライン変換
+      function inlineMarkup(text) {
+        text = esc(text);
+        // コードスパン
+        text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // 画像
+        text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+        // リンク
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        // 太字+斜体
+        text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+        // 太字
+        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // 斜体
+        text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        // 打ち消し線
+        text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
+        return text;
+      }
+
+      while (i < lines.length) {
+        const line = lines[i];
+
+        // コードブロック
+        if (line.trimStart().startsWith('```')) {
+          closeList();
+          let code = '';
+          i++;
+          while (i < lines.length && !lines[i].trimStart().startsWith('```')) {
+            code += (code ? '\n' : '') + esc(lines[i]);
+            i++;
+          }
+          html += `<pre><code>${code}</code></pre>`;
+          i++;
+          continue;
+        }
+
+        // 見出し
+        const headingMatch = line.match(/^(#{1,4})\s+(.+)/);
+        if (headingMatch) {
+          closeList();
+          const level = headingMatch[1].length;
+          html += `<h${level}>${inlineMarkup(headingMatch[2])}</h${level}>`;
+          i++; continue;
+        }
+
+        // 水平線
+        if (/^(---|\*\*\*|___)\s*$/.test(line.trim())) {
+          closeList();
+          html += '<hr>';
+          i++; continue;
+        }
+
+        // 引用
+        if (line.trimStart().startsWith('> ')) {
+          closeList();
+          let bq = '';
+          while (i < lines.length && lines[i].trimStart().startsWith('> ')) {
+            bq += (bq ? '<br>' : '') + inlineMarkup(lines[i].replace(/^>\s?/, ''));
+            i++;
+          }
+          html += `<blockquote>${bq}</blockquote>`;
+          continue;
+        }
+
+        // 番号なしリスト
+        const ulMatch = line.match(/^[\s]*([-*+])\s+(.+)/);
+        if (ulMatch) {
+          if (inOl) { html += '</ol>'; inOl = false; }
+          if (!inUl) { html += '<ul>'; inUl = true; }
+          html += `<li>${inlineMarkup(ulMatch[2])}</li>`;
+          i++; continue;
+        }
+
+        // 番号付きリスト
+        const olMatch = line.match(/^[\s]*(\d+)[.)]\s+(.+)/);
+        if (olMatch) {
+          if (inUl) { html += '</ul>'; inUl = false; }
+          if (!inOl) { html += '<ol>'; inOl = true; }
+          html += `<li>${inlineMarkup(olMatch[2])}</li>`;
+          i++; continue;
+        }
+
+        // 空行
+        if (line.trim() === '') {
+          closeList();
+          i++; continue;
+        }
+
+        // 通常段落
+        closeList();
+        html += `<p>${inlineMarkup(line)}</p>`;
+        i++;
+      }
+      closeList();
+      return html;
+    }
+
     // ===== セル描画 =====
     function renderCell(idx) {
       const d = cellData[idx];
       const el = document.getElementById(`content-${idx}`);
+      const mdBadge = document.getElementById(`md-badge-${idx}`);
       if (!el) return;
 
-      el.textContent = d.text;
       el.className = 'cell-content';
       el.classList.add(d.writingMode === 'v' ? 'v-write' : 'h-write');
       el.classList.add(`align-${d.hAlign}`);
@@ -503,6 +660,15 @@
       el.style.fontSize = d.fontSize + 'px';
       el.style.fontWeight = d.fontWeight;
       el.style.color = d.fontColor;
+
+      if (d.inputMode === 'md' && d.text.trim()) {
+        el.classList.add('md-rendered');
+        el.innerHTML = `<div class="md-inner">${parseMD(d.text)}</div>`;
+        if (mdBadge) mdBadge.style.display = '';
+      } else {
+        el.textContent = d.text;
+        if (mdBadge) mdBadge.style.display = 'none';
+      }
     }
 
     function renderAll() {
@@ -525,6 +691,7 @@
 
       // フォームに値を反映
       document.getElementById('cellText').value = d.text;
+      setToggle('inputMode', d.inputMode);
       setToggle('writingMode', d.writingMode);
       setToggle('hAlign', d.hAlign);
       setToggle('vAlign', d.vAlign);
@@ -532,6 +699,13 @@
       document.getElementById('fontSize').value = d.fontSize;
       document.getElementById('fontWeight').value = d.fontWeight;
       document.getElementById('fontColor').value = d.fontColor;
+
+      // MDヘルプの表示切替
+      document.getElementById('mdHelp').style.display = d.inputMode === 'md' ? '' : 'none';
+      // MDモード時のプレースホルダー
+      document.getElementById('cellText').placeholder = d.inputMode === 'md' 
+        ? '# 見出し\n**太字** *斜体*\n- リスト項目' 
+        : 'テキストを入力…';
 
       document.getElementById('cellText').focus();
     }
@@ -574,52 +748,16 @@
       });
     }
 
-    // ===== 背景画像 =====
-    function initBg() {
-      const input = document.getElementById('bgInput');
-      input.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          bgDataUrl = ev.target.result;
-          applyBg();
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function applyBg() {
-      const layer = document.getElementById('bgLayer');
-      const img = document.getElementById('bgPreviewImg');
-      const ph = document.getElementById('bgPlaceholder');
-      if (bgDataUrl) {
-        layer.style.backgroundImage = `url(${bgDataUrl})`;
-        img.src = bgDataUrl;
-        img.style.display = '';
-        ph.style.display = 'none';
-      } else {
-        layer.style.backgroundImage = '';
-        img.style.display = 'none';
-        ph.style.display = '';
-      }
-    }
-
-    function removeBg() {
-      bgDataUrl = '';
-      document.getElementById('bgInput').value = '';
-      applyBg();
-    }
-
     // ===== HTMLエクスポート =====
     function exportHTML() {
+      const bgExportPath = document.getElementById('bgExportPath').value.trim();
       let bgCSS = '';
-      if (bgDataUrl) {
+      if (bgExportPath) {
         bgCSS = `
     .bg-layer {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-image: url(${bgDataUrl});
+      background-image: url(${bgExportPath});
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -633,16 +771,33 @@
         for (let c = 0; c < COLS; c++) {
           const d = cellData[r * COLS + c];
           const wm = d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '';
-          const ha = d.hAlign === 'center' ? 'text-align:center;justify-content:center;'
-                   : d.hAlign === 'right'  ? 'text-align:right;justify-content:flex-end;'
-                   : 'text-align:left;justify-content:flex-start;';
-          const va = d.vAlign === 'top' ? 'align-items:flex-start;'
-                   : d.vAlign === 'bottom' ? 'align-items:flex-end;'
-                   : 'align-items:center;';
+          let ha, va;
+          if (d.writingMode === 'v') {
+            // 縦書き: justify-content=縦揃え, align-items=横揃え（左右反転）
+            ha = d.hAlign === 'center' ? 'align-items:center;'
+               : d.hAlign === 'right'  ? 'align-items:flex-start;'
+               : 'align-items:flex-end;';
+            va = d.vAlign === 'top' ? 'justify-content:flex-start;'
+               : d.vAlign === 'bottom' ? 'justify-content:flex-end;'
+               : 'justify-content:center;';
+          } else {
+            ha = d.hAlign === 'center' ? 'text-align:center;justify-content:center;'
+               : d.hAlign === 'right'  ? 'text-align:right;justify-content:flex-end;'
+               : 'text-align:left;justify-content:flex-start;';
+            va = d.vAlign === 'top' ? 'align-items:flex-start;'
+               : d.vAlign === 'bottom' ? 'align-items:flex-end;'
+               : 'align-items:center;';
+          }
           const style = `font-family:${d.fontFamily};font-size:${d.fontSize}px;font-weight:${d.fontWeight};color:${d.fontColor};${wm}${ha}${va}`;
-          const text = d.text ? escapeHTML(d.text) : `<!-- コンテンツ ${r+1}-${c+1} -->`;
+          let text;
+          if (d.inputMode === 'md' && d.text.trim()) {
+            text = `<div class="md-inner">${parseMD(d.text)}</div>`;
+          } else {
+            text = d.text ? escapeHTML(d.text) : `<!-- コンテンツ ${r+1}-${c+1} -->`;
+          }
+          const mdClass = d.inputMode === 'md' && d.text.trim() ? ' md-rendered' : '';
           cellsHTML += `      <div class="grid-item" style="grid-column: span 4;">\n`;
-          cellsHTML += `        <div class="grid-item-inner" style="${style}">\n`;
+          cellsHTML += `        <div class="grid-item-inner${mdClass}" style="${style}">\n`;
           cellsHTML += `          ${text}\n`;
           cellsHTML += `        </div>\n`;
           cellsHTML += `      </div>\n`;
@@ -696,6 +851,24 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
+    .md-rendered { white-space: normal; }
+    .md-rendered .md-inner { width: 100%; }
+    .md-rendered h1 { font-size:1.6em; font-weight:700; margin:0.3em 0; }
+    .md-rendered h2 { font-size:1.35em; font-weight:700; margin:0.3em 0; }
+    .md-rendered h3 { font-size:1.15em; font-weight:700; margin:0.25em 0; }
+    .md-rendered h4 { font-size:1em; font-weight:700; margin:0.2em 0; }
+    .md-rendered p { margin:0.3em 0; }
+    .md-rendered strong { font-weight:700; }
+    .md-rendered em { font-style:italic; }
+    .md-rendered code { background:rgba(128,128,128,0.2); padding:1px 5px; border-radius:3px; font-family:monospace; font-size:0.9em; }
+    .md-rendered pre { background:rgba(0,0,0,0.1); padding:8px 10px; border-radius:6px; overflow-x:auto; margin:0.4em 0; white-space:pre-wrap; }
+    .md-rendered pre code { background:none; padding:0; }
+    .md-rendered ul, .md-rendered ol { padding-left:1.5em; margin:0.3em 0; }
+    .md-rendered li { margin:0.15em 0; }
+    .md-rendered blockquote { border-left:3px solid #e94560; padding-left:10px; margin:0.4em 0; opacity:0.85; }
+    .md-rendered hr { border:none; border-top:1px solid rgba(128,128,128,0.4); margin:0.5em 0; }
+    .md-rendered a { color:#5ba8ff; text-decoration:underline; }
+    .md-rendered img { max-width:100%; border-radius:4px; }
     @media (max-width: 768px){
       .grid-row{ grid-template-columns: 1fr !important; aspect-ratio:auto; }
       .grid-item{ aspect-ratio: var(--w) / var(--h); }
@@ -703,7 +876,7 @@
   </style>
 </head>
 <body>
-  ${bgDataUrl ? '<div class="bg-layer"></div>' : ''}
+  ${bgExportPath ? '<div class="bg-layer"></div>' : ''}
   <div class="container">
 ${cellsHTML}  </div>
 </body>
@@ -725,11 +898,28 @@ ${cellsHTML}  </div>
     function init() {
       buildGrid();
       renderAll();
-      initBg();
 
       initToggleGroup('writingMode', 'writingMode');
       initToggleGroup('hAlign', 'hAlign');
       initToggleGroup('vAlign', 'vAlign');
+
+      // inputMode は特殊ハンドラ付き
+      const imBtns = document.querySelectorAll('#inputMode .toggle-btn');
+      imBtns.forEach(b => {
+        b.onclick = () => {
+          imBtns.forEach(x => x.classList.remove('active'));
+          b.classList.add('active');
+          if (selectedIdx >= 0) {
+            cellData[selectedIdx].inputMode = b.dataset.val;
+            renderCell(selectedIdx);
+            // MDヘルプ切替
+            document.getElementById('mdHelp').style.display = b.dataset.val === 'md' ? '' : 'none';
+            document.getElementById('cellText').placeholder = b.dataset.val === 'md'
+              ? '# 見出し\n**太字** *斜体*\n- リスト項目'
+              : 'テキストを入力…';
+          }
+        };
+      });
 
       bindInput('cellText', 'text');
       bindInput('fontFamily', 'fontFamily');
