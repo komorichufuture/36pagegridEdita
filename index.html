@@ -687,7 +687,8 @@
               <b># 見出し</b>　<b>**太字**</b>　<b>*斜体*</b><br>
               <b>- リスト</b>　<b>1. 番号リスト</b><br>
               <b>`コード`</b>　<b>> 引用</b>　<b>---</b><br>
-              <b>[リンク](URL)</b>　<b>![画像](URL)</b>
+              <b>[リンク](URL)</b>　<b>![画像](URL)</b><br>
+              <b>{漢字|かんじ}</b> ルビ
             </div>
           </div>
 
@@ -1025,6 +1026,7 @@
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
         text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
+        text = text.replace(/\{([^|{}]+)\|([^|{}]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>');
         return text;
       }
 
