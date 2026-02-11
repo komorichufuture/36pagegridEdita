@@ -436,6 +436,35 @@
     }
     .grid-cell.has-image:hover .image-remove-btn { display: flex; }
 
+    /* ===== 影プリセット ===== */
+    .shadow-sm  { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08); }
+    .shadow-md  { box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1); }
+    .shadow-lg  { box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.1); }
+    .shadow-glow { box-shadow: 0 0 25px rgba(233,69,96,0.5), 0 0 60px rgba(233,69,96,0.3), 0 0 100px rgba(233,69,96,0.15); }
+    .shadow-hard { box-shadow: 5px 5px 0px rgba(0,0,0,0.2); }
+
+    /* ===== アニメーション ===== */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+    @keyframes bounce { 0% { opacity:0; transform:translateY(30px); } 60% { opacity:1; transform:translateY(-8px); } 80% { transform:translateY(3px); } 100% { transform:translateY(0); } }
+    @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.03); } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+    @keyframes clickFadeOut { from { opacity:1; transform:scale(1); } to { opacity:0; transform:scale(0.95); } }
+
+    .anim-fadeIn     { animation: fadeIn 0.6s ease both; }
+    .anim-slideUp    { animation: slideUp 0.6s ease both; }
+    .anim-slideLeft  { animation: slideLeft 0.6s ease both; }
+    .anim-slideRight { animation: slideRight 0.6s ease both; }
+    .anim-zoomIn     { animation: zoomIn 0.5s ease both; }
+    .anim-bounce     { animation: bounce 0.7s ease both; }
+    .anim-pulse      { animation: pulse 2s ease-in-out infinite; }
+    .anim-float      { animation: float 3s ease-in-out infinite; }
+    .anim-clickFade  { cursor: pointer; transition: opacity 0.4s ease, transform 0.4s ease; }
+    .anim-clickFade.faded { opacity: 0; transform: scale(0.95); pointer-events: none; }
+
     /* ドロップゾーンオーバーレイ */
     .drop-overlay {
       display: none;
@@ -620,6 +649,20 @@
           </div>
         </div>
 
+        <!-- ページ背景色 -->
+        <div class="settings-section">
+          <div class="settings-section-title">🎨 ページ背景色</div>
+          <div class="path-row">
+            <label>背景色</label>
+            <input type="color" id="pageBgColor" value="#f5f5f5" oninput="applyPageBgColor(this.value); saveSettings();" style="max-width:80px; height:34px;" />
+            <span id="pageBgColorHex" style="font-family:'Courier New',monospace; font-size:13px; color:var(--text-dim);">#f5f5f5</span>
+            <button class="btn btn-sm" onclick="document.getElementById('pageBgColor').value='#f5f5f5'; applyPageBgColor('#f5f5f5'); saveSettings();">リセット</button>
+          </div>
+          <div class="settings-hint">
+            プレビューとエクスポートの両方に反映されます。暗い背景にするとグロー等の発光系エフェクトが映えます。
+          </div>
+        </div>
+
         <!-- エクスポート設定 -->
         <div class="settings-section">
           <div class="settings-section-title">📄 エクスポート設定</div>
@@ -749,6 +792,54 @@
               <input type="color" id="fontColor" value="#333333" />
             </div>
           </div>
+
+          <div class="panel-section">
+            <div class="panel-label">🎨 装飾</div>
+            <div class="form-row">
+              <label>背景色（空=透明）</label>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <input type="color" id="cellBgColor" value="#ffffff" style="flex:1;" />
+                <button class="btn btn-sm" onclick="document.getElementById('cellBgColor').value='#ffffff'; if(selectedIdx>=0){cellData[selectedIdx].bgColor='';renderCell(selectedIdx);}">クリア</button>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>背景の不透明度: <span id="bgOpacityVal">100</span>%</label>
+              <input type="range" id="cellBgOpacity" min="0" max="100" value="100" style="width:100%;" />
+            </div>
+            <div class="form-row">
+              <label>角丸 (px): <span id="borderRadiusVal">10</span></label>
+              <input type="range" id="cellBorderRadius" min="0" max="50" value="10" style="width:100%;" />
+            </div>
+            <div class="form-row">
+              <label>影</label>
+              <select id="cellShadow">
+                <option value="none">なし</option>
+                <option value="sm">小さい影</option>
+                <option value="md">中くらいの影</option>
+                <option value="lg">大きい影</option>
+                <option value="glow">グロー（発光）</option>
+                <option value="hard">ハードシャドウ</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>アニメーション</label>
+              <select id="cellAnimation">
+                <option value="none">なし</option>
+                <option value="fadeIn">フェードイン</option>
+                <option value="slideUp">スライドアップ</option>
+                <option value="slideLeft">スライド（左から）</option>
+                <option value="slideRight">スライド（右から）</option>
+                <option value="zoomIn">ズームイン</option>
+                <option value="bounce">バウンス</option>
+                <option value="pulse">パルス（繰り返し）</option>
+                <option value="float">ふわふわ（繰り返し）</option>
+                <option value="clickFade">クリックでフェードアウト</option>
+              </select>
+              <div style="margin-top:6px;">
+                <button class="btn btn-sm" onclick="previewAnimation()">▶ プレビュー</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 未選択時 -->
@@ -781,6 +872,7 @@
       ],
       defaultPathIndex: 0,
       bgPath: '',
+      pageBgColor: '#f5f5f5',
       exportTitle: '',
       exportCssPath: '',
     };
@@ -797,6 +889,7 @@
 
     function saveSettings() {
       settings.bgPath = document.getElementById('bgPath').value;
+      settings.pageBgColor = document.getElementById('pageBgColor').value;
       settings.exportTitle = document.getElementById('exportTitle').value;
       settings.exportCssPath = document.getElementById('exportCssPath').value;
       const sel = document.getElementById('defaultPathSelect');
@@ -804,6 +897,11 @@
       localStorage.setItem('blogEditorSettings', JSON.stringify(settings));
       showSaveIndicator();
       updateCurrentPathDisplay();
+    }
+
+    function applyPageBgColor(color) {
+      document.getElementById('previewArea').style.background = color;
+      document.getElementById('pageBgColorHex').textContent = color;
     }
 
     function showSaveIndicator() {
@@ -899,6 +997,12 @@
           fontSize: 16,
           fontWeight: '400',
           fontColor: '#333333',
+          // 装飾
+          bgColor: '',
+          bgOpacity: 100,
+          borderRadius: 10,
+          shadow: 'none',
+          animation: 'none',
           // 画像関連
           image: null,      // { filename, exportPath, previewDataUrl }
         });
@@ -1070,6 +1174,23 @@
     }
 
     // ===== セル描画 =====
+    function getShadowValue(key) {
+      const map = {
+        none: 'none',
+        sm: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+        md: '0 4px 12px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1)',
+        lg: '0 10px 30px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.1)',
+        glow: '0 0 25px rgba(233,69,96,0.5), 0 0 60px rgba(233,69,96,0.3), 0 0 100px rgba(233,69,96,0.15)',
+        hard: '5px 5px 0px rgba(0,0,0,0.2)',
+      };
+      return map[key] || 'none';
+    }
+
+    function hexToRgba(hex, opacity) {
+      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+      return `rgba(${r},${g},${b},${opacity/100})`;
+    }
+
     function renderCell(idx) {
       const d = cellData[idx];
       const el = document.getElementById(`content-${idx}`);
@@ -1078,6 +1199,21 @@
       const imgRemove = document.getElementById(`img-remove-${idx}`);
       const cell = document.querySelector(`.grid-cell[data-idx="${idx}"]`);
       if (!el) return;
+
+      // 装飾スタイルをセルに適用
+      cell.style.borderRadius = (d.borderRadius ?? 10) + 'px';
+      cell.style.boxShadow = getShadowValue(d.shadow || 'none');
+      if (d.bgColor) {
+        cell.style.background = hexToRgba(d.bgColor, d.bgOpacity ?? 100);
+      } else {
+        cell.style.background = 'transparent';
+      }
+      // アニメーションクラスをリセット
+      cell.className = cell.className.replace(/\banim-\S+/g, '').trim();
+      if (!cell.classList.contains('grid-cell')) cell.classList.add('grid-cell');
+      if (d.animation && d.animation !== 'none') {
+        cell.classList.add('anim-' + d.animation);
+      }
 
       // 画像がある場合
       if (d.image) {
@@ -1147,6 +1283,15 @@
       document.getElementById('fontSize').value = d.fontSize;
       document.getElementById('fontWeight').value = d.fontWeight;
       document.getElementById('fontColor').value = d.fontColor;
+
+      // 装飾
+      document.getElementById('cellBgColor').value = d.bgColor || '#ffffff';
+      document.getElementById('cellBgOpacity').value = d.bgOpacity ?? 100;
+      document.getElementById('bgOpacityVal').textContent = d.bgOpacity ?? 100;
+      document.getElementById('cellBorderRadius').value = d.borderRadius ?? 10;
+      document.getElementById('borderRadiusVal').textContent = d.borderRadius ?? 10;
+      document.getElementById('cellShadow').value = d.shadow || 'none';
+      document.getElementById('cellAnimation').value = d.animation || 'none';
 
       document.getElementById('mdHelp').style.display = d.inputMode === 'md' ? '' : 'none';
       document.getElementById('cellText').placeholder = d.inputMode === 'md'
@@ -1221,7 +1366,12 @@
 
           // 画像セル
           if (d.image) {
-            cellsHTML += `      <div class="grid-item" style="grid-column: ${c*4+1} / span 4;">\n`;
+            let itemStyle = `grid-column: ${c*4+1} / span 4;`;
+            if (d.bgColor) itemStyle += `background:${hexToRgba(d.bgColor, d.bgOpacity ?? 100)};`;
+            itemStyle += `border-radius:${d.borderRadius ?? 10}px;`;
+            if (d.shadow && d.shadow !== 'none') itemStyle += `box-shadow:${getShadowValue(d.shadow)};`;
+            const animClass = (d.animation && d.animation !== 'none') ? ' anim-' + d.animation : '';
+            cellsHTML += `      <div class="grid-item${animClass}" style="${itemStyle}">\n`;
             cellsHTML += `        <img src="${escHTML(d.image.exportPath)}" alt="${escHTML(d.image.filename)}" />\n`;
             cellsHTML += `      </div>\n`;
             continue;
@@ -1237,6 +1387,11 @@
             va = d.vAlign === 'top' ? 'align-items:flex-start;' : d.vAlign === 'bottom' ? 'align-items:flex-end;' : 'align-items:center;';
           }
           const style = `font-family:${d.fontFamily};font-size:${d.fontSize}px;font-weight:${d.fontWeight};color:${d.fontColor};${wm}${ha}${va}`;
+          let itemStyle = `grid-column: ${c*4+1} / span 4;`;
+          if (d.bgColor) itemStyle += `background:${hexToRgba(d.bgColor, d.bgOpacity ?? 100)};`;
+          itemStyle += `border-radius:${d.borderRadius ?? 10}px;`;
+          if (d.shadow && d.shadow !== 'none') itemStyle += `box-shadow:${getShadowValue(d.shadow)};`;
+          const animClass = (d.animation && d.animation !== 'none') ? ' anim-' + d.animation : '';
           let text;
           if (d.inputMode === 'md' && d.text.trim()) {
             text = `<div class="md-inner">${parseMD(d.text)}</div>`;
@@ -1244,7 +1399,7 @@
             text = escHTML(d.text).replace(/\n/g,'<br>');
           }
           const mdClass = d.inputMode === 'md' && d.text.trim() ? ' md-rendered' : '';
-          cellsHTML += `      <div class="grid-item" style="grid-column: ${c*4+1} / span 4;">\n`;
+          cellsHTML += `      <div class="grid-item${animClass}" style="${itemStyle}">\n`;
           cellsHTML += `        <div class="grid-item-inner${mdClass}" style="${style}">\n`;
           cellsHTML += `          ${text}\n`;
           cellsHTML += `        </div>\n`;
@@ -1263,7 +1418,7 @@
   ${settings.exportCssPath ? `<link rel="stylesheet" href="${escHTML(settings.exportCssPath)}" />` : ''}
   <style>
     *{ box-sizing:border-box; margin:0; padding:0; }
-    body{ font-family: 'Noto Sans JP', sans-serif; background:#f5f5f5; }${bgCSS}
+    body{ font-family: 'Noto Sans JP', sans-serif; background:${escHTML(settings.pageBgColor || '#f5f5f5')}; }${bgCSS}
     .container{ position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:20px; }
     .grid-row{ display:grid; grid-template-columns:repeat(12,1fr); gap:15px; margin-bottom:15px; aspect-ratio:var(--w)/var(--h); }
     .grid-item{ background:transparent; border-radius:10px; overflow:hidden; }
@@ -1287,6 +1442,24 @@
     .md-rendered hr { border:none; border-top:1px solid rgba(128,128,128,0.4); margin:0.5em 0; }
     .md-rendered a { color:#5ba8ff; text-decoration:underline; }
     .md-rendered img { max-width:100%; border-radius:4px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+    @keyframes bounce { 0% { opacity:0; transform:translateY(30px); } 60% { opacity:1; transform:translateY(-8px); } 80% { transform:translateY(3px); } 100% { transform:translateY(0); } }
+    @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.03); } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+    .anim-fadeIn { animation:fadeIn 0.6s ease both; }
+    .anim-slideUp { animation:slideUp 0.6s ease both; }
+    .anim-slideLeft { animation:slideLeft 0.6s ease both; }
+    .anim-slideRight { animation:slideRight 0.6s ease both; }
+    .anim-zoomIn { animation:zoomIn 0.5s ease both; }
+    .anim-bounce { animation:bounce 0.7s ease both; }
+    .anim-pulse { animation:pulse 2s ease-in-out infinite; }
+    .anim-float { animation:float 3s ease-in-out infinite; }
+    .anim-clickFade { cursor:pointer; transition:opacity 0.4s ease, transform 0.4s ease; }
+    .anim-clickFade.faded { opacity:0; transform:scale(0.95); pointer-events:none; }
     @media (max-width:768px){ .grid-row{ grid-template-columns:1fr !important; aspect-ratio:auto; } .grid-item{ aspect-ratio:var(--w)/var(--h); } }
   </style>
 </head>
@@ -1294,6 +1467,11 @@
   ${bgExportPath ? '<div class="bg-layer"></div>' : ''}
   <div class="container">
 ${cellsHTML}  </div>
+  <script>
+    document.querySelectorAll('.anim-clickFade').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('faded'));
+    });
+  <\/script>
 </body>
 </html>`;
 
@@ -1309,10 +1487,31 @@ ${cellsHTML}  </div>
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    // ===== アニメーションプレビュー =====
+    function previewAnimation() {
+      if (selectedIdx < 0) return;
+      const d = cellData[selectedIdx];
+      if (!d.animation || d.animation === 'none') return;
+      const cell = document.querySelector(`.grid-cell[data-idx="${selectedIdx}"]`);
+      if (!cell) return;
+      if (d.animation === 'clickFade') {
+        cell.classList.add('faded');
+        setTimeout(() => cell.classList.remove('faded'), 1200);
+        return;
+      }
+      const cls = 'anim-' + d.animation;
+      cell.classList.remove(cls);
+      void cell.offsetWidth; // reflow
+      cell.classList.add(cls);
+    }
+
     // ===== 初期化 =====
     function init() {
       // 設定を画面に反映
       document.getElementById('bgPath').value = settings.bgPath || '';
+      const initBgColor = settings.pageBgColor || '#f5f5f5';
+      document.getElementById('pageBgColor').value = initBgColor;
+      applyPageBgColor(initBgColor);
       document.getElementById('exportTitle').value = settings.exportTitle || '';
       document.getElementById('exportCssPath').value = settings.exportCssPath || '';
       renderPathList();
@@ -1346,6 +1545,27 @@ ${cellsHTML}  </div>
       bindInput('fontSize', 'fontSize', v => parseInt(v) || 16);
       bindInput('fontWeight', 'fontWeight');
       bindInput('fontColor', 'fontColor');
+
+      // 装飾バインド
+      document.getElementById('cellBgColor').addEventListener('input', (e) => {
+        if (selectedIdx < 0) return;
+        cellData[selectedIdx].bgColor = e.target.value;
+        renderCell(selectedIdx);
+      });
+      document.getElementById('cellBgOpacity').addEventListener('input', (e) => {
+        if (selectedIdx < 0) return;
+        cellData[selectedIdx].bgOpacity = parseInt(e.target.value);
+        document.getElementById('bgOpacityVal').textContent = e.target.value;
+        renderCell(selectedIdx);
+      });
+      document.getElementById('cellBorderRadius').addEventListener('input', (e) => {
+        if (selectedIdx < 0) return;
+        cellData[selectedIdx].borderRadius = parseInt(e.target.value);
+        document.getElementById('borderRadiusVal').textContent = e.target.value;
+        renderCell(selectedIdx);
+      });
+      bindInput('cellShadow', 'shadow');
+      bindInput('cellAnimation', 'animation');
 
       document.getElementById('previewArea').addEventListener('click', (e) => {
         if (!e.target.closest('.grid-cell')) deselectCell();
