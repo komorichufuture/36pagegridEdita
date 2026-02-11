@@ -336,9 +336,7 @@
     }
     .grid-cell:hover { outline-color: rgba(233,69,96,0.4); }
     .grid-cell.selected { outline-color: var(--accent); }
-    .grid-cell:nth-child(1),
-    .grid-cell:nth-child(3) { background: transparent; }
-    .grid-cell:nth-child(2) { background: rgba(255,255,255,0.5); }
+    .grid-cell { background: transparent; }
 
     .cell-content {
       width: 100%;
@@ -1204,13 +1202,24 @@
 
       let cellsHTML = '';
       for (let r = 0; r < ROWS; r++) {
+        // 行内の全セルが空ならスキップ
+        let rowHasContent = false;
+        for (let c = 0; c < COLS; c++) {
+          const d = cellData[r * COLS + c];
+          if (d.image || d.text.trim()) { rowHasContent = true; break; }
+        }
+        if (!rowHasContent) continue;
+
         cellsHTML += `    <div class="grid-row" style="--w:2; --h:1;">\n`;
         for (let c = 0; c < COLS; c++) {
           const d = cellData[r * COLS + c];
 
+          // 空セルはスキップ
+          if (!d.image && !d.text.trim()) continue;
+
           // 画像セル
           if (d.image) {
-            cellsHTML += `      <div class="grid-item" style="grid-column: span 4;">\n`;
+            cellsHTML += `      <div class="grid-item" style="grid-column: ${c*4+1} / span 4;">\n`;
             cellsHTML += `        <img src="${escHTML(d.image.exportPath)}" alt="${escHTML(d.image.filename)}" />\n`;
             cellsHTML += `      </div>\n`;
             continue;
@@ -1230,10 +1239,10 @@
           if (d.inputMode === 'md' && d.text.trim()) {
             text = `<div class="md-inner">${parseMD(d.text)}</div>`;
           } else {
-            text = d.text ? escHTML(d.text).replace(/\n/g,'<br>') : `<!-- ${r+1}-${c+1} -->`;
+            text = escHTML(d.text).replace(/\n/g,'<br>');
           }
           const mdClass = d.inputMode === 'md' && d.text.trim() ? ' md-rendered' : '';
-          cellsHTML += `      <div class="grid-item" style="grid-column: span 4;">\n`;
+          cellsHTML += `      <div class="grid-item" style="grid-column: ${c*4+1} / span 4;">\n`;
           cellsHTML += `        <div class="grid-item-inner${mdClass}" style="${style}">\n`;
           cellsHTML += `          ${text}\n`;
           cellsHTML += `        </div>\n`;
@@ -1256,7 +1265,6 @@
     .container{ position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:20px; }
     .grid-row{ display:grid; grid-template-columns:repeat(12,1fr); gap:15px; margin-bottom:15px; aspect-ratio:var(--w)/var(--h); }
     .grid-item{ background:transparent; border-radius:10px; overflow:hidden; }
-    .grid-item:nth-child(3n+2){ background:rgba(255,255,255,0.5); }
     .grid-item > img{ width:100%; height:100%; object-fit:cover; display:block; }
     .grid-item-inner{ width:100%; height:100%; display:flex; padding:12px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
     .md-rendered { white-space:normal; }
