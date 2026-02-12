@@ -573,6 +573,15 @@
       .editor-body { flex-direction: column; }
       .side-panel { width: 100%; max-height: 300px; border-right: none; border-bottom: 1px solid var(--border); }
     }
+    @media (max-width: 768px) {
+      .grid-row {
+        grid-template-columns: 1fr !important;
+        aspect-ratio: auto;
+      }
+      .grid-cell {
+        aspect-ratio: 3 / 1;
+      }
+    }
 
     /* Font */
     .font-option-serif { font-family: 'Noto Serif JP', serif; }
@@ -1471,7 +1480,7 @@
     .anim-float { animation:float 3s ease-in-out infinite; }
     .anim-clickFade { cursor:pointer; transition:opacity 0.4s ease, transform 0.4s ease; }
     .anim-clickFade.faded { opacity:0; transform:scale(0.95); pointer-events:none; }
-    @media (max-width:768px){ .grid-row{ grid-template-columns:1fr !important; aspect-ratio:auto; } .grid-item{ aspect-ratio:var(--w)/var(--h); } }
+    @media (max-width:768px){ .grid-row{ grid-template-columns:1fr !important; aspect-ratio:auto; } .grid-item{ grid-column:1 / -1 !important; aspect-ratio:auto; } .grid-item-inner{ height:auto; min-height:40px; } }
   </style>
 </head>
 <body>
