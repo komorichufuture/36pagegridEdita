@@ -586,6 +586,119 @@
     /* Font */
     .font-option-serif { font-family: 'Noto Serif JP', serif; }
     .font-option-sans  { font-family: 'Noto Sans JP', sans-serif; }
+
+    /* ===== カードモード ===== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    @media (max-width: 600px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+    .card-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      outline: 2px solid transparent;
+      transition: outline 0.15s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .card-cell:hover { outline-color: rgba(233,69,96,0.4); transform: translateY(-2px); }
+    .card-cell.selected { outline-color: var(--accent); }
+    .card-cell .card-image-area {
+      flex: 0 0 60%;
+      overflow: hidden;
+      background: rgba(0,0,0,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .card-cell .card-image-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-cell .card-image-area .card-img-placeholder {
+      font-size: 32px;
+      opacity: 0.2;
+    }
+    .card-cell .card-text-area {
+      flex: 1;
+      padding: 12px;
+      overflow: hidden;
+      display: flex;
+      word-break: break-word;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .card-cell .cell-badge {
+      position: absolute;
+      top: 4px; left: 4px;
+      font-size: 9px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      padding: 1px 5px;
+      border-radius: 3px;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 2;
+    }
+    .card-cell .drop-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(46,204,113,0.1);
+      border: 2px dashed var(--success);
+      border-radius: 10px;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--success);
+      z-index: 3;
+    }
+    .card-cell.drag-over .drop-overlay { display: flex; }
+    .card-cell .image-remove-btn {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(231,76,60,0.8);
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    .card-cell:hover .image-remove-btn.visible { display: flex; }
+
+    /* カードモード MD */
+    .card-text-area.md-rendered { white-space: normal; }
+    .card-text-area.md-rendered .md-inner { width: 100%; }
+    .card-text-area.md-rendered h1 { font-size: 1.4em; font-weight: 700; margin: 0.2em 0; }
+    .card-text-area.md-rendered h2 { font-size: 1.2em; font-weight: 700; margin: 0.2em 0; }
+    .card-text-area.md-rendered h3 { font-size: 1.1em; font-weight: 700; margin: 0.15em 0; }
+    .card-text-area.md-rendered p { margin: 0.2em 0; }
+    .card-text-area.md-rendered strong { font-weight: 700; }
+    .card-text-area.md-rendered em { font-style: italic; }
+    .card-text-area.md-rendered code { background: rgba(128,128,128,0.2); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    .card-text-area.md-rendered ul, .card-text-area.md-rendered ol { padding-left: 1.5em; margin: 0.2em 0; }
+    .card-text-area.md-rendered li { margin: 0.1em 0; }
+    .card-text-area.md-rendered blockquote { border-left: 3px solid #e94560; padding-left: 10px; margin: 0.3em 0; opacity: 0.85; }
+    .card-text-area.md-rendered a { color: #5ba8ff; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -610,6 +723,26 @@
   <div class="tab-content active" id="tab-settings">
     <div class="settings-page">
       <div class="settings-container">
+
+        <!-- レイアウトモード -->
+        <div class="settings-section">
+          <div class="settings-section-title">📐 レイアウトモード</div>
+          <div class="form-row">
+            <div class="toggle-group" id="layoutModeToggle">
+              <button class="toggle-btn active" data-val="grid" onclick="switchLayoutMode('grid')">グリッド（3列）</button>
+              <button class="toggle-btn" data-val="card" onclick="switchLayoutMode('card')">カード</button>
+            </div>
+          </div>
+          <div id="cardSettings" style="display:none; margin-top:12px;">
+            <div class="path-row">
+              <label>カード枚数</label>
+              <input type="number" id="cardCount" value="12" min="2" max="48" step="1" style="max-width:80px;" onchange="updateCardCount()" />
+            </div>
+            <div class="settings-hint">
+              画像＋短いテキストの正方形カードを並べます。PC: 2列、モバイル: 1列。
+            </div>
+          </div>
+        </div>
 
         <!-- パスプリセット -->
         <div class="settings-section">
@@ -886,6 +1019,8 @@
       defaultPathIndex: 0,
       bgPath: '',
       pageBgColor: '#f5f5f5',
+      layoutMode: 'grid',  // 'grid' or 'card'
+      cardCount: 12,
       exportTitle: '',
       exportCssPath: '',
     };
@@ -905,6 +1040,7 @@
       settings.pageBgColor = document.getElementById('pageBgColor').value;
       settings.exportTitle = document.getElementById('exportTitle').value;
       settings.exportCssPath = document.getElementById('exportCssPath').value;
+      settings.cardCount = parseInt(document.getElementById('cardCount').value) || 12;
       const sel = document.getElementById('defaultPathSelect');
       settings.defaultPathIndex = parseInt(sel.value) || 0;
       localStorage.setItem('blogEditorSettings', JSON.stringify(settings));
@@ -1028,6 +1164,67 @@
     function buildGrid() {
       const container = document.getElementById('gridContainer');
       container.innerHTML = '';
+      deselectCell();
+
+      if (settings.layoutMode === 'card') {
+        container.className = 'card-grid';
+        const count = settings.cardCount || 12;
+        for (let i = 0; i < count; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'card-cell';
+          cell.dataset.idx = i;
+          cell.onclick = (e) => { if (!e.target.closest('.image-remove-btn')) selectCell(i); };
+
+          const badge = document.createElement('div');
+          badge.className = 'cell-badge';
+          badge.textContent = `${i+1}`;
+
+          const dropOverlay = document.createElement('div');
+          dropOverlay.className = 'drop-overlay';
+          dropOverlay.textContent = '📷 画像をドロップ';
+
+          // 画像エリア
+          const imgArea = document.createElement('div');
+          imgArea.className = 'card-image-area';
+          imgArea.id = `card-img-${i}`;
+          const placeholder = document.createElement('div');
+          placeholder.className = 'card-img-placeholder';
+          placeholder.textContent = '🖼';
+          imgArea.appendChild(placeholder);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'image-remove-btn';
+          removeBtn.textContent = '✕';
+          removeBtn.id = `img-remove-${i}`;
+          removeBtn.onclick = (e) => { e.stopPropagation(); removeCellImageAt(i); };
+
+          // テキストエリア
+          const textArea = document.createElement('div');
+          textArea.className = 'card-text-area';
+          textArea.id = `content-${i}`;
+
+          cell.appendChild(badge);
+          cell.appendChild(dropOverlay);
+          cell.appendChild(imgArea);
+          cell.appendChild(removeBtn);
+          cell.appendChild(textArea);
+          container.appendChild(cell);
+
+          // D&D
+          cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('drag-over'); });
+          cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+          cell.addEventListener('drop', (e) => {
+            e.preventDefault();
+            cell.classList.remove('drag-over');
+            handleImageDrop(i, e.dataTransfer);
+          });
+        }
+        renderAll();
+        return;
+      }
+
+      // ===== 通常グリッドモード =====
+      container.className = 'grid-container';
       for (let r = 0; r < ROWS; r++) {
         const row = document.createElement('div');
         row.className = 'grid-row';
@@ -1211,6 +1408,66 @@
 
     function renderCell(idx) {
       const d = cellData[idx];
+
+      // ===== カードモード =====
+      if (settings.layoutMode === 'card') {
+        const cell = document.querySelector(`.card-cell[data-idx="${idx}"]`);
+        if (!cell) return;
+        const imgArea = document.getElementById(`card-img-${idx}`);
+        const textArea = document.getElementById(`content-${idx}`);
+        const removeBtn = document.getElementById(`img-remove-${idx}`);
+
+        // 装飾
+        cell.style.borderRadius = (d.borderRadius ?? 12) + 'px';
+        cell.style.boxShadow = getShadowValue(d.shadow || 'none', d.glowColor);
+        if (d.bgColor) {
+          cell.style.background = hexToRgba(d.bgColor, d.bgOpacity ?? 100);
+        } else {
+          cell.style.background = '#fff';
+        }
+        cell.className = cell.className.replace(/\banim-\S+/g, '').trim();
+        if (!cell.classList.contains('card-cell')) cell.classList.add('card-cell');
+        if (d.animation && d.animation !== 'none') cell.classList.add('anim-' + d.animation);
+
+        // 画像
+        if (d.image) {
+          imgArea.style.display = '';
+          imgArea.style.flex = '0 0 60%';
+          imgArea.innerHTML = `<img src="${d.image.previewDataUrl}" alt="${escHTML(d.image.filename)}" />`;
+          if (removeBtn) { removeBtn.classList.add('visible'); }
+        } else {
+          // 画像なし → 画像エリアを隠してテキスト全面
+          imgArea.style.display = 'none';
+          if (removeBtn) { removeBtn.classList.remove('visible'); }
+        }
+
+        // テキスト
+        textArea.style.fontFamily = d.fontFamily;
+        textArea.style.fontSize = d.fontSize + 'px';
+        textArea.style.fontWeight = d.fontWeight;
+        textArea.style.color = d.fontColor;
+        textArea.style.writingMode = d.writingMode === 'v' ? 'vertical-rl' : 'horizontal-tb';
+        // 配置
+        if (d.writingMode === 'v') {
+          textArea.style.alignItems = d.hAlign === 'center' ? 'center' : d.hAlign === 'right' ? 'flex-start' : 'flex-end';
+          textArea.style.justifyContent = d.vAlign === 'top' ? 'flex-start' : d.vAlign === 'bottom' ? 'flex-end' : 'center';
+          textArea.style.textAlign = '';
+        } else {
+          textArea.style.textAlign = d.hAlign;
+          textArea.style.justifyContent = d.hAlign === 'center' ? 'center' : d.hAlign === 'right' ? 'flex-end' : 'flex-start';
+          textArea.style.alignItems = d.vAlign === 'top' ? 'flex-start' : d.vAlign === 'bottom' ? 'flex-end' : 'center';
+        }
+        if (d.inputMode === 'md' && d.text.trim()) {
+          textArea.className = 'card-text-area md-rendered';
+          textArea.innerHTML = `<div class="md-inner">${parseMD(d.text)}</div>`;
+        } else {
+          textArea.className = 'card-text-area';
+          textArea.textContent = d.text;
+        }
+        return;
+      }
+
+      // ===== 通常グリッドモード =====
       const el = document.getElementById(`content-${idx}`);
       const mdBadge = document.getElementById(`md-badge-${idx}`);
       const imgBadge = document.getElementById(`img-badge-${idx}`);
@@ -1267,19 +1524,28 @@
       }
     }
 
-    function renderAll() { cellData.forEach((_, i) => renderCell(i)); }
+    function renderAll() {
+      if (settings.layoutMode === 'card') {
+        const count = settings.cardCount || 12;
+        for (let i = 0; i < count; i++) renderCell(i);
+      } else {
+        cellData.forEach((_, i) => renderCell(i));
+      }
+    }
 
     // ===== セル選択 =====
     function selectCell(idx) {
-      document.querySelectorAll('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
+      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : '.grid-cell';
+      document.querySelectorAll(`${cellSelector}.selected`).forEach(el => el.classList.remove('selected'));
       selectedIdx = idx;
-      const cell = document.querySelector(`.grid-cell[data-idx="${idx}"]`);
+      const cell = document.querySelector(`${cellSelector}[data-idx="${idx}"]`);
       if (cell) cell.classList.add('selected');
 
       const d = cellData[idx];
       document.getElementById('cellEditor').style.display = '';
       document.getElementById('emptyEditor').style.display = 'none';
-      document.getElementById('cellEditorTitle').textContent = `📝 セル ${d.row+1}-${d.col+1}`;
+      document.getElementById('cellEditorTitle').textContent = settings.layoutMode === 'card'
+        ? `📝 カード ${idx+1}` : `📝 セル ${d.row+1}-${d.col+1}`;
 
       // 画像情報
       const imgInfo = document.getElementById('cellImageInfo');
@@ -1321,7 +1587,7 @@
     }
 
     function deselectCell() {
-      document.querySelectorAll('.grid-cell.selected').forEach(el => el.classList.remove('selected'));
+      document.querySelectorAll('.grid-cell.selected, .card-cell.selected').forEach(el => el.classList.remove('selected'));
       selectedIdx = -1;
       document.getElementById('cellEditor').style.display = 'none';
       document.getElementById('emptyEditor').style.display = '';
@@ -1354,6 +1620,118 @@
 
     // ===== HTMLエクスポート =====
     function exportHTML() {
+      if (settings.layoutMode === 'card') return exportCardHTML();
+      return exportGridHTML();
+    }
+
+    function exportCardHTML() {
+      const bgExportPath = settings.bgPath || '';
+      const title = settings.exportTitle || 'ブログ記事';
+      let bgCSS = '';
+      if (bgExportPath) {
+        bgCSS = '\n    .bg-layer { position:fixed; top:0; left:0; right:0; bottom:0;'
+          + ' background-image:url(' + bgExportPath + ');'
+          + ' background-size:cover; background-position:center; background-attachment:fixed; z-index:0; }';
+      }
+
+      let cardsHTML = '';
+      const count = settings.cardCount || 12;
+      for (let i = 0; i < count; i++) {
+        const d = cellData[i];
+        if (!d.image && !d.text.trim()) continue;
+
+        let cardStyle = '';
+        if (d.bgColor) cardStyle += 'background:' + hexToRgba(d.bgColor, d.bgOpacity ?? 100) + ';';
+        else cardStyle += 'background:#fff;';
+        cardStyle += 'border-radius:' + (d.borderRadius ?? 12) + 'px;';
+        if (d.shadow && d.shadow !== 'none') cardStyle += 'box-shadow:' + getShadowValue(d.shadow, d.glowColor) + ';';
+        const animClass = (d.animation && d.animation !== 'none') ? ' anim-' + d.animation : '';
+
+        cardsHTML += '    <div class="card' + animClass + '" style="' + cardStyle + '">\n';
+        if (d.image) {
+          cardsHTML += '      <div class="card-img"><img src="' + escHTML(d.image.exportPath) + '" alt="' + escHTML(d.image.filename) + '" /></div>\n';
+        }
+        if (d.text.trim()) {
+          const wm = d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '';
+          let ha, va;
+          if (d.writingMode === 'v') {
+            ha = d.hAlign === 'center' ? 'align-items:center;' : d.hAlign === 'right' ? 'align-items:flex-start;' : 'align-items:flex-end;';
+            va = d.vAlign === 'top' ? 'justify-content:flex-start;' : d.vAlign === 'bottom' ? 'justify-content:flex-end;' : 'justify-content:center;';
+          } else {
+            ha = 'text-align:' + d.hAlign + ';';
+            va = d.vAlign === 'top' ? 'align-items:flex-start;' : d.vAlign === 'bottom' ? 'align-items:flex-end;' : 'align-items:center;';
+          }
+          const fullStyle = !d.image ? 'flex:1 1 100%;' : '';
+          const ts = fullStyle + 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + wm + ha + va;
+          const mdCls = d.inputMode === 'md' ? ' md-rendered' : '';
+          const content = d.inputMode === 'md' ? '<div class="md-inner">' + parseMD(d.text) + '</div>' : escHTML(d.text).replace(/\n/g,'<br>');
+          cardsHTML += '      <div class="card-text' + mdCls + '" style="' + ts + '">' + content + '</div>\n';
+        } else if (d.image) {
+          // 画像のみ（テキストなし）→ 画像が全面
+          cardsHTML = cardsHTML.replace(/<div class="card-img">/, '<div class="card-img" style="flex:1;">');
+        }
+        cardsHTML += '    </div>\n';
+      }
+
+      const pageBg = escHTML(settings.pageBgColor || '#f5f5f5');
+      const cssLink = settings.exportCssPath ? '  <link rel="stylesheet" href="' + escHTML(settings.exportCssPath) + '" />\n' : '';
+
+      const html = '<!DOCTYPE html>\n<html lang="ja">\n<head>\n'
+        + '  <meta charset="UTF-8" />\n'
+        + '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n'
+        + '  <title>' + escHTML(title) + '</title>\n'
+        + '  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">\n'
+        + cssLink
+        + '  <style>\n'
+        + '    *{ box-sizing:border-box; margin:0; padding:0; }\n'
+        + '    body{ font-family:"Noto Sans JP",sans-serif; background:' + pageBg + '; }' + bgCSS + '\n'
+        + '    .container{ position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:20px; }\n'
+        + '    .card-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }\n'
+        + '    .card{ aspect-ratio:1/1; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-radius:16px; }\n'
+        + '    .card-img{ flex:0 0 60%; overflow:hidden; }\n'
+        + '    .card-img img{ width:100%; height:100%; object-fit:cover; display:block; }\n'
+        + '    .card-text{ flex:1; padding:12px; line-height:1.5; word-break:break-word; overflow:hidden; display:flex; }\n'
+        + '    @media(max-width:600px){ .card-grid{ grid-template-columns:1fr; } }\n'
+        + '    .md-rendered{ white-space:normal; } .md-rendered .md-inner{ width:100%; }\n'
+        + '    .md-rendered h1{ font-size:1.4em; font-weight:700; margin:0.2em 0; }\n'
+        + '    .md-rendered h2{ font-size:1.2em; font-weight:700; margin:0.2em 0; }\n'
+        + '    .md-rendered h3{ font-size:1.1em; font-weight:700; margin:0.15em 0; }\n'
+        + '    .md-rendered p{ margin:0.2em 0; } .md-rendered strong{ font-weight:700; } .md-rendered em{ font-style:italic; }\n'
+        + '    .md-rendered code{ background:rgba(128,128,128,0.2); padding:1px 5px; border-radius:3px; font-family:monospace; font-size:0.9em; }\n'
+        + '    .md-rendered ul,.md-rendered ol{ padding-left:1.5em; margin:0.2em 0; } .md-rendered li{ margin:0.1em 0; }\n'
+        + '    .md-rendered blockquote{ border-left:3px solid #e94560; padding-left:10px; margin:0.3em 0; opacity:0.85; }\n'
+        + '    .md-rendered a{ color:#5ba8ff; text-decoration:underline; }\n'
+        + '    @keyframes fadeIn{from{opacity:0}to{opacity:1}}\n'
+        + '    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}\n'
+        + '    @keyframes slideLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}\n'
+        + '    @keyframes slideRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}\n'
+        + '    @keyframes zoomIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}\n'
+        + '    @keyframes bounce{0%{opacity:0;transform:translateY(30px)}60%{opacity:1;transform:translateY(-8px)}80%{transform:translateY(3px)}100%{transform:translateY(0)}}\n'
+        + '    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}\n'
+        + '    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}\n'
+        + '    .anim-fadeIn{animation:fadeIn .6s ease both} .anim-slideUp{animation:slideUp .6s ease both}\n'
+        + '    .anim-slideLeft{animation:slideLeft .6s ease both} .anim-slideRight{animation:slideRight .6s ease both}\n'
+        + '    .anim-zoomIn{animation:zoomIn .5s ease both} .anim-bounce{animation:bounce .7s ease both}\n'
+        + '    .anim-pulse{animation:pulse 2s ease-in-out infinite} .anim-float{animation:float 3s ease-in-out infinite}\n'
+        + '    .anim-clickFade{cursor:pointer;transition:opacity .4s ease,transform .4s ease}\n'
+        + '    .anim-clickFade.faded{opacity:0;transform:scale(0.95);pointer-events:none}\n'
+        + '  </style>\n</head>\n<body>\n'
+        + (bgExportPath ? '  <div class="bg-layer"></div>\n' : '')
+        + '  <div class="container">\n    <div class="card-grid">\n'
+        + cardsHTML
+        + '    </div>\n  </div>\n'
+        + '  <script>document.querySelectorAll(".anim-clickFade").forEach(el=>{el.addEventListener("click",()=>el.classList.toggle("faded"))});<\/script>\n'
+        + '</body>\n</html>';
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (settings.exportTitle || 'blog-cards').replace(/\s+/g, '-') + '.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function exportGridHTML() {
       const bgExportPath = settings.bgPath || '';
       const title = settings.exportTitle || 'ブログ記事';
       let bgCSS = '';
@@ -1512,7 +1890,8 @@ ${cellsHTML}  </div>
       if (selectedIdx < 0) return;
       const d = cellData[selectedIdx];
       if (!d.animation || d.animation === 'none') return;
-      const cell = document.querySelector(`.grid-cell[data-idx="${selectedIdx}"]`);
+      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : '.grid-cell';
+      const cell = document.querySelector(`${cellSelector}[data-idx="${selectedIdx}"]`);
       if (!cell) return;
       if (d.animation === 'clickFade') {
         cell.classList.add('faded');
@@ -1521,8 +1900,28 @@ ${cellsHTML}  </div>
       }
       const cls = 'anim-' + d.animation;
       cell.classList.remove(cls);
-      void cell.offsetWidth; // reflow
+      void cell.offsetWidth;
       cell.classList.add(cls);
+    }
+
+    function switchLayoutMode(mode) {
+      settings.layoutMode = mode;
+      document.querySelectorAll('#layoutModeToggle .toggle-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.val === mode)
+      );
+      document.getElementById('cardSettings').style.display = mode === 'card' ? '' : 'none';
+      saveSettings();
+      buildGrid();
+      renderAll();
+    }
+
+    function updateCardCount() {
+      const val = parseInt(document.getElementById('cardCount').value) || 12;
+      settings.cardCount = Math.max(2, Math.min(48, val));
+      document.getElementById('cardCount').value = settings.cardCount;
+      saveSettings();
+      buildGrid();
+      renderAll();
     }
 
     // ===== 初期化 =====
@@ -1534,6 +1933,13 @@ ${cellsHTML}  </div>
       applyPageBgColor(initBgColor);
       document.getElementById('exportTitle').value = settings.exportTitle || '';
       document.getElementById('exportCssPath').value = settings.exportCssPath || '';
+      // レイアウトモード復元
+      const mode = settings.layoutMode || 'grid';
+      document.querySelectorAll('#layoutModeToggle .toggle-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.val === mode)
+      );
+      document.getElementById('cardSettings').style.display = mode === 'card' ? '' : 'none';
+      document.getElementById('cardCount').value = settings.cardCount || 12;
       renderPathList();
       updateCurrentPathDisplay();
 
@@ -1598,7 +2004,7 @@ ${cellsHTML}  </div>
       bindInput('cellAnimation', 'animation');
 
       document.getElementById('previewArea').addEventListener('click', (e) => {
-        if (!e.target.closest('.grid-cell')) deselectCell();
+        if (!e.target.closest('.grid-cell') && !e.target.closest('.card-cell')) deselectCell();
       });
     }
 
