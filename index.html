@@ -601,6 +601,196 @@
     .font-option-serif { font-family: 'Noto Serif JP', serif; }
     .font-option-sans  { font-family: 'Noto Sans JP', sans-serif; }
 
+    /* ===== カルーセルモード（プレビュー内） ===== */
+    .carousel-root {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      background: #f6f7f9;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,.08);
+      display: flex;
+      flex-direction: column;
+      height: 740px;
+    }
+    .carousel-nav {
+      padding: 14px 16px 12px;
+      color: #fff;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .carousel-nav h2 { margin: 0; font-size: 18px; font-weight: 800; }
+    .carousel-nav .cnav-sub { font-size: 12px; opacity: .9; margin-top: 2px; }
+    .carousel-tabs {
+      height: 48px;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      display: flex;
+      flex-shrink: 0;
+    }
+    .carousel-tab-btn {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      color: #6b7280;
+      position: relative;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .carousel-tab-btn.active { color: #111; }
+    .carousel-tab-btn.active::after {
+      content: "";
+      position: absolute;
+      left: 12px; right: 12px; bottom: 0;
+      height: 3px;
+      background: #111;
+    }
+    .carousel-content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .carousel-track {
+      height: 100%;
+      display: flex;
+      transition: transform .34s cubic-bezier(.2,.8,.2,1);
+      will-change: transform;
+    }
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      overflow: auto;
+      padding: 14px;
+    }
+    .carousel-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .carousel-grid.cg-2 { grid-template-columns: repeat(2, 1fr); }
+    .carousel-grid.cg-3 { grid-template-columns: repeat(3, 1fr); }
+    .carousel-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 10px;
+      padding: 0;
+      box-shadow: 0 6px 18px rgba(0,0,0,.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      cursor: pointer;
+      transition: outline .15s;
+      outline: 2px solid transparent;
+      position: relative;
+    }
+    .carousel-card:hover { outline-color: rgba(233,69,96,0.4); }
+    .carousel-card.selected { outline-color: var(--accent); }
+    .carousel-card .cc-img-area {
+      height: 80px;
+      overflow: hidden;
+      background: rgba(0,0,0,.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .carousel-card .cc-img-area img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .carousel-card .cc-img-placeholder {
+      font-size: 24px; opacity: 0.2;
+    }
+    .carousel-card .cc-text-area {
+      padding: 8px 10px;
+      flex: 1;
+      overflow: hidden;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+    .carousel-card .cell-badge {
+      position: absolute;
+      top: 2px; left: 2px;
+      font-size: 8px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      padding: 1px 4px;
+      border-radius: 3px;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 2;
+    }
+    .carousel-card .drop-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(46,204,113,0.1);
+      border: 2px dashed var(--success);
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--success);
+      z-index: 3;
+    }
+    .carousel-card.drag-over .drop-overlay { display: flex; }
+    .carousel-card .image-remove-btn {
+      position: absolute;
+      top: 2px; right: 2px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(231,76,60,0.8);
+      color: #fff;
+      font-size: 10px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    .carousel-card:hover .image-remove-btn.visible { display: flex; }
+    /* carousel tab editor indicator */
+    .carousel-tab-editor {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .carousel-tab-editor button {
+      flex: 1;
+      padding: 6px 0;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .carousel-tab-editor button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    /* carousel card MD */
+    .cc-text-area.md-rendered { white-space: normal; }
+    .cc-text-area.md-rendered .md-inner { width: 100%; }
+    .cc-text-area.md-rendered h1 { font-size: 1.2em; font-weight: 700; margin: 0.15em 0; }
+    .cc-text-area.md-rendered h2 { font-size: 1.1em; font-weight: 700; margin: 0.1em 0; }
+    .cc-text-area.md-rendered h3 { font-size: 1em; font-weight: 700; margin: 0.1em 0; }
+    .cc-text-area.md-rendered p { margin: 0.15em 0; }
+    .cc-text-area.md-rendered strong { font-weight: 700; }
+    .cc-text-area.md-rendered code { background: rgba(128,128,128,0.2); padding: 1px 4px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    .cc-text-area.md-rendered ul, .cc-text-area.md-rendered ol { padding-left: 1.2em; margin: 0.1em 0; }
+    .cc-text-area.md-rendered li { margin: 0.05em 0; }
+    .cc-text-area.md-rendered a { color: #5ba8ff; text-decoration: underline; }
+    .cc-text-area.v-write { writing-mode: vertical-rl; }
+
     /* ===== カードモード ===== */
     .card-grid {
       display: grid;
@@ -743,8 +933,9 @@
           <div class="settings-section-title">📐 レイアウトモード</div>
           <div class="form-row">
             <div class="toggle-group" id="layoutModeToggle">
-              <button class="toggle-btn active" data-val="grid" onclick="switchLayoutMode('grid')">グリッド（3列）</button>
+              <button class="toggle-btn active" data-val="grid" onclick="switchLayoutMode('grid')">グリッド</button>
               <button class="toggle-btn" data-val="card" onclick="switchLayoutMode('card')">カード</button>
+              <button class="toggle-btn" data-val="carousel" onclick="switchLayoutMode('carousel')">カルーセル</button>
             </div>
           </div>
           <div id="cardSettings" style="display:none; margin-top:12px;">
@@ -754,6 +945,47 @@
             </div>
             <div class="settings-hint">
               画像＋短いテキストの正方形カードを並べます。PC: 2列、モバイル: 1列で自動調整されます。
+            </div>
+          </div>
+          <div id="carouselSettings" style="display:none; margin-top:12px;">
+            <div class="path-row">
+              <label>タブ数</label>
+              <select id="carouselTabCount" onchange="applyCarouselTabCount()">
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div class="path-row">
+              <label>列数</label>
+              <select id="carouselGridCols" onchange="saveSettings(); buildGrid(); renderAll();">
+                <option value="2" selected>2列</option>
+                <option value="3">3列</option>
+              </select>
+            </div>
+            <div class="path-row">
+              <label>1タブあたりカード数</label>
+              <input type="number" id="carouselItemsPerTab" value="8" min="1" max="24" step="1" style="max-width:80px;" onchange="updateCarouselItemCount()" />
+            </div>
+            <div class="path-row">
+              <label>ナビタイトル</label>
+              <input type="text" id="carouselNavTitle" placeholder="モバイルダッシュボード" oninput="saveSettings(); buildGrid(); renderAll();" />
+            </div>
+            <div class="path-row">
+              <label>サブテキスト</label>
+              <input type="text" id="carouselNavSub" placeholder="すぐ下でカテゴリを切替" oninput="saveSettings(); buildGrid(); renderAll();" />
+            </div>
+            <div class="path-row">
+              <label>ナビ色</label>
+              <input type="color" id="carouselNavColor" value="#111111" oninput="saveSettings(); buildGrid(); renderAll();" style="max-width:80px;" />
+            </div>
+            <div style="margin-top:10px;">
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">タブ名編集</div>
+              <div id="carouselTabNames"></div>
+            </div>
+            <div class="settings-hint">
+              タブをタップ or スワイプでカルーセル切り替え。KaruseruスタイルのモバイルUIです。
             </div>
           </div>
         </div>
@@ -1069,6 +1301,14 @@
       cardCount: 12,
       exportTitle: '',
       exportCssPath: '',
+      // Carousel settings
+      carouselTabCount: 3,
+      carouselGridCols: 2,
+      carouselItemsPerTab: 8,
+      carouselNavTitle: 'モバイルダッシュボード',
+      carouselNavSub: 'すぐ下でカテゴリを切替',
+      carouselNavColor: '#111111',
+      carouselTabNames: ['ホーム', '作業', '設定'],
     };
 
     let settings = loadSettings();
@@ -1089,6 +1329,17 @@
       settings.cardCount = parseInt(document.getElementById('cardCount').value) || 12;
       const sel = document.getElementById('defaultPathSelect');
       settings.defaultPathIndex = parseInt(sel.value) || 0;
+      // Carousel
+      settings.carouselGridCols = parseInt(document.getElementById('carouselGridCols').value) || 2;
+      settings.carouselItemsPerTab = parseInt(document.getElementById('carouselItemsPerTab').value) || 8;
+      settings.carouselNavTitle = document.getElementById('carouselNavTitle').value;
+      settings.carouselNavSub = document.getElementById('carouselNavSub').value;
+      settings.carouselNavColor = document.getElementById('carouselNavColor').value;
+      // save tab names
+      const tnInputs = document.querySelectorAll('.carousel-tn-input');
+      if (tnInputs.length > 0) {
+        settings.carouselTabNames = Array.from(tnInputs).map(el => el.value || `タブ${parseInt(el.dataset.idx)+1}`);
+      }
       localStorage.setItem('blogEditorSettings', JSON.stringify(settings));
       showSaveIndicator();
       updateCurrentPathDisplay();
@@ -1208,7 +1459,114 @@
     function buildGrid() {
       const container = document.getElementById('gridContainer');
       container.innerHTML = '';
+      container.style.padding = '';
       deselectCell();
+      carouselSwipeBound = false;
+
+      if (settings.layoutMode === 'carousel') {
+        container.className = 'grid-container';
+        container.style.padding = '0';
+        const tabCount = settings.carouselTabCount || 3;
+        const perTab = settings.carouselItemsPerTab || 8;
+        const cols = settings.carouselGridCols || 2;
+        const names = settings.carouselTabNames || [];
+        const navColor = settings.carouselNavColor || '#111111';
+
+        // Build carousel root
+        const root = document.createElement('div');
+        root.className = 'carousel-root';
+
+        // Nav
+        const nav = document.createElement('div');
+        nav.className = 'carousel-nav';
+        nav.style.background = navColor;
+        nav.innerHTML = `<div><h2>${escHTML(settings.carouselNavTitle || '')}</h2><div class="cnav-sub">${escHTML(settings.carouselNavSub || '')}</div></div>`;
+        root.appendChild(nav);
+
+        // Tabs
+        const tabs = document.createElement('div');
+        tabs.className = 'carousel-tabs';
+        for (let t = 0; t < tabCount; t++) {
+          const btn = document.createElement('button');
+          btn.className = 'carousel-tab-btn' + (t === currentCarouselTab ? ' active' : '');
+          btn.textContent = names[t] || `タブ${t+1}`;
+          btn.onclick = () => switchCarouselTab(t);
+          tabs.appendChild(btn);
+        }
+        root.appendChild(tabs);
+
+        // Content area
+        const content = document.createElement('div');
+        content.className = 'carousel-content';
+        const track = document.createElement('div');
+        track.className = 'carousel-track';
+        track.style.transform = `translateX(-${currentCarouselTab * 100}%)`;
+
+        for (let t = 0; t < tabCount; t++) {
+          const slide = document.createElement('div');
+          slide.className = 'carousel-slide';
+          const grid = document.createElement('div');
+          grid.className = `carousel-grid cg-${cols}`;
+
+          for (let i = 0; i < perTab; i++) {
+            const idx = getCarouselCellIndex(t, i);
+            const card = document.createElement('div');
+            card.className = 'carousel-card';
+            card.dataset.idx = idx;
+            card.onclick = (e) => { if (!e.target.closest('.image-remove-btn')) selectCell(idx); };
+
+            const badge = document.createElement('div');
+            badge.className = 'cell-badge';
+            badge.textContent = `${t+1}-${i+1}`;
+
+            const dropOverlay = document.createElement('div');
+            dropOverlay.className = 'drop-overlay';
+            dropOverlay.textContent = '📷 ドロップ';
+
+            const imgArea = document.createElement('div');
+            imgArea.className = 'cc-img-area';
+            imgArea.id = `carousel-img-${idx}`;
+            imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'image-remove-btn';
+            removeBtn.textContent = '✕';
+            removeBtn.id = `img-remove-${idx}`;
+            removeBtn.onclick = (e) => { e.stopPropagation(); removeCellImageAt(idx); };
+
+            const textArea = document.createElement('div');
+            textArea.className = 'cc-text-area';
+            textArea.id = `content-${idx}`;
+
+            card.appendChild(badge);
+            card.appendChild(dropOverlay);
+            card.appendChild(imgArea);
+            card.appendChild(removeBtn);
+            card.appendChild(textArea);
+            grid.appendChild(card);
+
+            card.addEventListener('dragover', (e) => { e.preventDefault(); card.classList.add('drag-over'); });
+            card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+            card.addEventListener('drop', (e) => {
+              e.preventDefault();
+              card.classList.remove('drag-over');
+              handleImageDrop(idx, e.dataTransfer);
+            });
+          }
+          slide.appendChild(grid);
+          track.appendChild(slide);
+        }
+
+        content.appendChild(track);
+        root.appendChild(content);
+        container.appendChild(root);
+
+        // Attach swipe
+        attachCarouselSwipe(content);
+
+        renderAll();
+        return;
+      }
 
       if (settings.layoutMode === 'card') {
         container.className = 'card-grid';
@@ -1326,6 +1684,76 @@
     }
 
     // ===== 画像ドロップ処理 =====
+    let carouselSwipeBound = false;
+    function attachCarouselSwipe(area) {
+      if (carouselSwipeBound) return;
+      carouselSwipeBound = true;
+      let startX = 0, dx = 0, dragging = false;
+      area.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX; dx = 0; dragging = true;
+      }, { passive: true });
+      area.addEventListener('touchmove', (e) => {
+        if (!dragging) return;
+        dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - (e.touches[0].clientY); // just track dx
+        const track = area.querySelector('.carousel-track');
+        if (track) {
+          track.style.transition = 'none';
+          const base = -currentCarouselTab * 100;
+          const follow = (dx / area.clientWidth) * 100;
+          track.style.transform = `translateX(${base + follow}%)`;
+        }
+      }, { passive: true });
+      area.addEventListener('touchend', () => {
+        if (!dragging) return;
+        dragging = false;
+        const track = area.querySelector('.carousel-track');
+        if (track) track.style.transition = 'transform .34s cubic-bezier(.2,.8,.2,1)';
+        const tabCount = settings.carouselTabCount || 3;
+        if (Math.abs(dx) > 50) {
+          if (dx < 0 && currentCarouselTab < tabCount - 1) currentCarouselTab++;
+          if (dx > 0 && currentCarouselTab > 0) currentCarouselTab--;
+        }
+        switchCarouselTab(currentCarouselTab);
+      }, { passive: true });
+      // Mouse drag support for desktop preview
+      area.addEventListener('mousedown', (e) => {
+        startX = e.clientX; dx = 0; dragging = true;
+        e.preventDefault();
+      });
+      area.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        dx = e.clientX - startX;
+        const track = area.querySelector('.carousel-track');
+        if (track) {
+          track.style.transition = 'none';
+          const base = -currentCarouselTab * 100;
+          const follow = (dx / area.clientWidth) * 100;
+          track.style.transform = `translateX(${base + follow}%)`;
+        }
+      });
+      area.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        const track = area.querySelector('.carousel-track');
+        if (track) track.style.transition = 'transform .34s cubic-bezier(.2,.8,.2,1)';
+        const tabCount = settings.carouselTabCount || 3;
+        if (Math.abs(dx) > 50) {
+          if (dx < 0 && currentCarouselTab < tabCount - 1) currentCarouselTab++;
+          if (dx > 0 && currentCarouselTab > 0) currentCarouselTab--;
+        }
+        switchCarouselTab(currentCarouselTab);
+      });
+      area.addEventListener('mouseleave', () => {
+        if (dragging) {
+          dragging = false;
+          const track = area.querySelector('.carousel-track');
+          if (track) track.style.transition = 'transform .34s cubic-bezier(.2,.8,.2,1)';
+          switchCarouselTab(currentCarouselTab);
+        }
+      });
+    }
+
     function handleImageDrop(idx, dataTransfer) {
       const files = dataTransfer.files;
       if (files.length === 0) return;
@@ -1350,6 +1778,14 @@
       cellData[idx].image = null;
       const cell = document.querySelector(`.grid-cell[data-idx="${idx}"]`);
       if (cell) cell.classList.remove('has-image');
+      // also handle carousel card
+      const ccard = document.querySelector(`.carousel-card[data-idx="${idx}"]`);
+      if (ccard) {
+        const imgArea = document.getElementById(`carousel-img-${idx}`);
+        if (imgArea) imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
+        const removeBtn = document.getElementById(`img-remove-${idx}`);
+        if (removeBtn) removeBtn.classList.remove('visible');
+      }
       renderCell(idx);
       if (selectedIdx === idx) selectCell(idx);
     }
@@ -1507,6 +1943,49 @@
     function renderCell(idx) {
       const d = cellData[idx];
 
+      if (settings.layoutMode === 'carousel') {
+        const card = document.querySelector(`.carousel-card[data-idx="${idx}"]`);
+        if (!card) return;
+        const imgArea = document.getElementById(`carousel-img-${idx}`);
+        const textArea = document.getElementById(`content-${idx}`);
+        const removeBtn = document.getElementById(`img-remove-${idx}`);
+
+        card.style.borderRadius = (d.borderRadius ?? 10) + 'px';
+        card.style.boxShadow = getShadowValue(d.shadow || 'none', d.glowColor);
+        if (d.bgColor) {
+          card.style.background = hexToRgba(d.bgColor, d.bgOpacity ?? 100);
+        } else {
+          card.style.background = '#fff';
+        }
+        card.className = card.className.replace(/\banim-\S+/g, '').trim();
+        if (!card.classList.contains('carousel-card')) card.classList.add('carousel-card');
+        if (d.animation && d.animation !== 'none') card.classList.add('anim-' + d.animation);
+
+        if (d.image && imgArea) {
+          imgArea.innerHTML = `<img src="${d.image.previewDataUrl}" alt="${escHTML(d.image.filename)}" />`;
+          if (removeBtn) removeBtn.classList.add('visible');
+        } else if (imgArea) {
+          imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
+          if (removeBtn) removeBtn.classList.remove('visible');
+        }
+
+        if (textArea) {
+          textArea.style.fontFamily = d.fontFamily;
+          textArea.style.fontSize = d.fontSize + 'px';
+          textArea.style.fontWeight = d.fontWeight;
+          textArea.style.color = d.fontColor;
+          textArea.style.textShadow = getTextGlowShadow(d.textGlow, d.textGlowColor);
+          if (d.inputMode === 'md' && d.text.trim()) {
+            textArea.className = 'cc-text-area md-rendered' + (d.writingMode === 'v' ? ' v-write' : '');
+            textArea.innerHTML = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
+          } else {
+            textArea.className = 'cc-text-area' + (d.writingMode === 'v' ? ' v-write' : '');
+            textArea.textContent = d.text;
+          }
+        }
+        return;
+      }
+
       if (settings.layoutMode === 'card') {
         const cell = document.querySelector(`.card-cell[data-idx="${idx}"]`);
         if (!cell) return;
@@ -1603,7 +2082,15 @@
     }
 
     function renderAll() {
-      if (settings.layoutMode === 'card') {
+      if (settings.layoutMode === 'carousel') {
+        const tabCount = settings.carouselTabCount || 3;
+        const perTab = settings.carouselItemsPerTab || 8;
+        for (let t = 0; t < tabCount; t++) {
+          for (let i = 0; i < perTab; i++) {
+            renderCell(getCarouselCellIndex(t, i));
+          }
+        }
+      } else if (settings.layoutMode === 'card') {
         const count = settings.cardCount || 12;
         for (let i = 0; i < count; i++) renderCell(i);
       } else {
@@ -1613,7 +2100,7 @@
 
     // ===== セル選択 =====
     function selectCell(idx) {
-      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : '.grid-cell';
+      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : settings.layoutMode === 'carousel' ? '.carousel-card' : '.grid-cell';
       document.querySelectorAll(`${cellSelector}.selected`).forEach(el => el.classList.remove('selected'));
       selectedIdx = idx;
       const cell = document.querySelector(`${cellSelector}[data-idx="${idx}"]`);
@@ -1623,7 +2110,9 @@
       document.getElementById('cellEditor').style.display = '';
       document.getElementById('emptyEditor').style.display = 'none';
       document.getElementById('cellEditorTitle').textContent = settings.layoutMode === 'card'
-        ? `📝 カード ${idx+1}` : `📝 セル ${d.row+1}-${d.col+1}`;
+        ? `📝 カード ${idx+1}` : settings.layoutMode === 'carousel'
+        ? `📝 カルーセル ${Math.floor(idx / (settings.carouselItemsPerTab || 8))+1}-${idx % (settings.carouselItemsPerTab || 8)+1}`
+        : `📝 セル ${d.row+1}-${d.col+1}`;
 
       const imgInfo = document.getElementById('cellImageInfo');
       if (d.image) {
@@ -1667,7 +2156,7 @@
     }
 
     function deselectCell() {
-      document.querySelectorAll('.grid-cell.selected, .card-cell.selected').forEach(el => el.classList.remove('selected'));
+      document.querySelectorAll('.grid-cell.selected, .card-cell.selected, .carousel-card.selected').forEach(el => el.classList.remove('selected'));
       selectedIdx = -1;
       document.getElementById('cellEditor').style.display = 'none';
       document.getElementById('emptyEditor').style.display = '';
@@ -1701,7 +2190,216 @@
     // ===== HTMLエクスポート（既存コード使用） =====
     function exportHTML() {
       if (settings.layoutMode === 'card') return exportCardHTML();
+      if (settings.layoutMode === 'carousel') return exportCarouselHTML();
       return exportGridHTML();
+    }
+
+    // ===== カルーセル HTML エクスポート =====
+    function exportCarouselHTML() {
+      const title = settings.exportTitle || settings.carouselNavTitle || 'カルーセルページ';
+      const navTitle = settings.carouselNavTitle || '';
+      const navSub = settings.carouselNavSub || '';
+      const navColor = settings.carouselNavColor || '#111111';
+      const tabCount = settings.carouselTabCount || 3;
+      const perTab = settings.carouselItemsPerTab || 8;
+      const cols = settings.carouselGridCols || 2;
+      const names = settings.carouselTabNames || [];
+
+      // Build data JSON for export
+      const exportData = {
+        navTitle, navSub, navColor, tabCount, perTab, cols,
+        tabs: []
+      };
+      for (let t = 0; t < tabCount; t++) {
+        const tab = { name: names[t] || `タブ${t+1}`, items: [] };
+        for (let i = 0; i < perTab; i++) {
+          const d = cellData[getCarouselCellIndex(t, i)];
+          if (!d.image && !d.text.trim()) continue;
+          const item = {};
+          if (d.image) item.img = d.image.exportPath;
+          if (d.text.trim()) {
+            item.text = d.text;
+            item.inputMode = d.inputMode;
+            item.fontFamily = d.fontFamily;
+            item.fontSize = d.fontSize;
+            item.fontWeight = d.fontWeight;
+            item.fontColor = d.fontColor;
+            item.writingMode = d.writingMode;
+          }
+          if (d.bgColor) { item.bgColor = d.bgColor; item.bgOpacity = d.bgOpacity; }
+          item.borderRadius = d.borderRadius;
+          if (d.shadow && d.shadow !== 'none') { item.shadow = d.shadow; item.glowColor = d.glowColor; }
+          if (d.textGlow && d.textGlow !== 'none') { item.textGlow = d.textGlow; item.textGlowColor = d.textGlowColor; }
+          if (d.animation && d.animation !== 'none') item.animation = d.animation;
+          tab.items.push(item);
+        }
+        exportData.tabs.push(tab);
+      }
+
+      const safeData = JSON.stringify(exportData);
+
+      const html = `<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>${escHTML(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#f6f7f9; --navH:56px; --tabH:48px; --line:rgba(0,0,0,.10); }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans JP',ui-sans-serif,system-ui,-apple-system,sans-serif;background:var(--bg);color:#111}
+  .nav{
+    height:var(--navH); padding:14px 16px 12px; color:#fff;
+    display:flex; align-items:flex-end; justify-content:space-between;
+    position:sticky; top:0; z-index:3;
+  }
+  .nav h1{margin:0;font-size:18px;font-weight:900}
+  .nav .sub{font-size:12px;opacity:.9;margin-top:2px}
+  .tabs{
+    height:var(--tabH); background:#fff;
+    border-bottom:1px solid rgba(0,0,0,.06);
+    display:flex; position:sticky; top:var(--navH); z-index:2;
+  }
+  .tabBtn{
+    flex:1;border:0;background:transparent;
+    font-size:13px;font-weight:900;letter-spacing:.04em;
+    color:#6b7280;position:relative;cursor:pointer;
+    font-family:inherit;
+  }
+  .tabBtn.active{color:#111}
+  .tabBtn.active::after{
+    content:"";position:absolute;left:12px;right:12px;bottom:0;
+    height:3px;border-radius:2px;background:#111
+  }
+  .content{height:calc(100vh - var(--navH) - var(--tabH));overflow:hidden}
+  .carousel{height:100%;display:flex;transition:transform .34s cubic-bezier(.2,.8,.2,1);will-change:transform}
+  .slide{min-width:100%;height:100%;overflow:auto;padding:14px 14px 18px}
+  .grid{display:grid;gap:12px}
+  .grid2{grid-template-columns:repeat(2,1fr)}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+  .card{
+    background:#fff;border:1px solid rgba(0,0,0,.08);
+    border-radius:10px;overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,.04);
+    display:flex;flex-direction:column;cursor:pointer;
+  }
+  .card:active{transform:scale(.985)}
+  .card-img{height:100px;overflow:hidden;background:rgba(0,0,0,.03)}
+  .card-img img{width:100%;height:100%;object-fit:cover;display:block}
+  .card-text{padding:10px;flex:1;line-height:1.4;word-break:break-word;overflow:hidden}
+  .md-rendered{white-space:normal} .md-rendered .md-inner{width:100%}
+  .md-rendered h1{font-size:1.4em;font-weight:700;margin:0.2em 0}
+  .md-rendered h2{font-size:1.2em;font-weight:700;margin:0.2em 0}
+  .md-rendered h3{font-size:1.1em;font-weight:700;margin:0.15em 0}
+  .md-rendered p{margin:0.2em 0} .md-rendered strong{font-weight:700} .md-rendered em{font-style:italic}
+  .md-rendered code{background:rgba(128,128,128,0.2);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:0.9em}
+  .md-rendered pre{background:rgba(0,0,0,.06);padding:10px;border-radius:6px;overflow:auto;margin:.4em 0;white-space:pre-wrap}
+  .md-rendered pre code{background:transparent;padding:0}
+  .md-rendered ul,.md-rendered ol{padding-left:1.5em;margin:0.2em 0} .md-rendered li{margin:0.1em 0}
+  .md-rendered blockquote{border-left:3px solid #e94560;padding-left:10px;margin:0.3em 0;opacity:0.85}
+  .md-rendered a{color:#5ba8ff;text-decoration:underline}
+  .size-marker{font-size:inherit}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes zoomIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+  @keyframes bounce{0%{opacity:0;transform:translateY(30px)}60%{opacity:1;transform:translateY(-8px)}80%{transform:translateY(3px)}100%{transform:translateY(0)}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .anim-fadeIn{animation:fadeIn .6s ease both}
+  .anim-slideUp{animation:slideUp .6s ease both}
+  .anim-zoomIn{animation:zoomIn .5s ease both}
+  .anim-bounce{animation:bounce .7s ease both}
+  .anim-pulse{animation:pulse 2s ease-in-out infinite}
+  .anim-float{animation:float 3s ease-in-out infinite}
+  .anim-clickFade{cursor:pointer;transition:opacity .4s ease,transform .4s ease}
+  .anim-clickFade.faded{opacity:0;transform:scale(0.95);pointer-events:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const data = ${safeData};
+function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function parseMD(src){
+  let html="";const lines=src.split("\\n");let i=0,inUl=false,inOl=false;
+  function cl(){if(inUl){html+="</ul>";inUl=false}if(inOl){html+="</ol>";inOl=false}}
+  function il(t){t=esc(t);t=t.replace(/\\{([^|{}]+)\\|([0-9.]+)\\}/g,(_,x,r)=>{const c=Math.min(3,Math.max(.5,parseFloat(r)||1));return'<span class="size-marker" style="font-size:'+c+'em">'+x+"</span>"});t=t.replace(/\`([^\`]+)\`/g,"<code>$1</code>");t=t.replace(/!\\[([^\\]]*)\\]\\(([^)]+)\\)/g,(_,a,u)=>'<img src="'+u+'" alt="'+a+'" />');t=t.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g,(_,l,u)=>'<a href="'+u+'" target="_blank">'+l+"</a>");t=t.replace(/\\*\\*\\*(.+?)\\*\\*\\*/g,"<strong><em>$1</em></strong>");t=t.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");t=t.replace(/\\*(.+?)\\*/g,"<em>$1</em>");t=t.replace(/\\{([^|{}]+)\\|([^|{}]+)\\}/g,"<ruby>$1<rt>$2</rt></ruby>");return t}
+  while(i<lines.length){const l=lines[i];if(l.trimStart().startsWith("\`\`\`")){cl();let c="";i++;while(i<lines.length&&!lines[i].trimStart().startsWith("\`\`\`")){c+=(c?"\\n":"")+esc(lines[i]);i++}html+="<pre><code>"+c+"</code></pre>";i++;continue}const hm=l.match(/^(#{1,4})\\s+(.+)/);if(hm){cl();html+="<h"+hm[1].length+">"+il(hm[2])+"</h"+hm[1].length+">";i++;continue}if(/^(---|\\*\\*\\*|___)\\s*$/.test(l.trim())){cl();html+="<hr>";i++;continue}if(l.trimStart().startsWith("> ")){cl();let bq="";while(i<lines.length&&lines[i].trimStart().startsWith("> ")){bq+=(bq?"<br>":"")+il(lines[i].replace(/^>\\s?/,""));i++}html+="<blockquote>"+bq+"</blockquote>";continue}const ulm=l.match(/^[\\s]*([-*+])\\s+(.+)/);if(ulm){if(inOl){html+="</ol>";inOl=false}if(!inUl){html+="<ul>";inUl=true}html+="<li>"+il(ulm[2])+"</li>";i++;continue}const olm=l.match(/^[\\s]*(\\d+)[.)]\\s+(.+)/);if(olm){if(inUl){html+="</ul>";inUl=false}if(!inOl){html+="<ol>";inOl=true}html+="<li>"+il(olm[2])+"</li>";i++;continue}if(l.trim()===""){cl();i++;continue}cl();let pl=[];while(i<lines.length&&lines[i].trim()!==""&&!lines[i].match(/^(#{1,4})\\s+/)&&!lines[i].trimStart().startsWith("\`\`\`")&&!/^(---|\\*\\*\\*|___)\\s*$/.test(lines[i].trim())&&!lines[i].trimStart().startsWith("> ")&&!lines[i].match(/^[\\s]*([-*+])\\s+/)&&!lines[i].match(/^[\\s]*(\\d+)[.)]\\s+/)){pl.push(il(lines[i]));i++}html+="<p>"+pl.join("<br>")+"</p>"}cl();return html
+}
+function shadow(k,gc){
+  if(k==="glow"){const c=gc||"#e94560";const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);return"0 0 25px rgba("+r+","+g+","+b+",.5),0 0 60px rgba("+r+","+g+","+b+",.3)"}
+  const m={none:"none",sm:"0 1px 3px rgba(0,0,0,.12)",md:"0 4px 12px rgba(0,0,0,.15)",lg:"0 10px 30px rgba(0,0,0,.2)",hard:"5px 5px 0 rgba(0,0,0,.2)"};return m[k]||"none"
+}
+function tglow(s,c){
+  if(!s||s==="none")return"none";const cl=c||"#00c8ff";const r=parseInt(cl.slice(1,3),16),g=parseInt(cl.slice(3,5),16),b=parseInt(cl.slice(5,7),16);
+  if(s==="soft")return"0 0 8px rgba("+r+","+g+","+b+",.6),0 0 20px rgba("+r+","+g+","+b+",.3)";
+  if(s==="strong")return"0 0 10px rgba("+r+","+g+","+b+",.8),0 0 30px rgba("+r+","+g+","+b+",.5)";
+  if(s==="neon")return"0 0 6px rgba("+r+","+g+","+b+",.9),0 0 15px rgba("+r+","+g+","+b+",.7),0 0 40px rgba("+r+","+g+","+b+",.5)";
+  return"none"
+}
+function rgba(hex,op){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return"rgba("+r+","+g+","+b+","+(op/100)+")"}
+
+let currentTab=0;
+function render(){
+  const app=document.getElementById("app");app.innerHTML="";
+  const nav=document.createElement("div");nav.className="nav";nav.style.background=data.navColor;
+  nav.innerHTML='<div><h1>'+esc(data.navTitle)+'</h1><div class="sub">'+esc(data.navSub)+'</div></div>';
+  const tabs=document.createElement("div");tabs.className="tabs";
+  data.tabs.forEach((t,i)=>{const b=document.createElement("button");b.className="tabBtn"+(i===currentTab?" active":"");b.textContent=t.name;b.onclick=()=>{currentTab=i;render()};tabs.appendChild(b)});
+  const content=document.createElement("div");content.className="content";
+  const car=document.createElement("div");car.className="carousel";car.style.transform="translateX(-"+currentTab*100+"%)";
+  data.tabs.forEach(t=>{
+    const slide=document.createElement("div");slide.className="slide";
+    const grid=document.createElement("div");grid.className="grid "+(data.cols===3?"grid3":"grid2");
+    (t.items||[]).forEach(it=>{
+      const card=document.createElement("div");card.className="card";
+      let st="";
+      if(it.borderRadius!=null)st+="border-radius:"+it.borderRadius+"px;";
+      if(it.bgColor)st+="background:"+rgba(it.bgColor,it.bgOpacity??100)+";";
+      if(it.shadow)st+="box-shadow:"+shadow(it.shadow,it.glowColor)+";";
+      card.style.cssText=st;
+      if(it.animation)card.classList.add("anim-"+it.animation);
+      if(it.img){card.innerHTML+='<div class="card-img"><img src="'+esc(it.img)+'" onerror="this.parentElement.style.display=\\'none\\'"></div>'}
+      if(it.text){
+        let ts="";
+        if(it.fontFamily)ts+="font-family:"+it.fontFamily+";";
+        if(it.fontSize)ts+="font-size:"+it.fontSize+"px;";
+        if(it.fontWeight)ts+="font-weight:"+it.fontWeight+";";
+        if(it.fontColor)ts+="color:"+it.fontColor+";";
+        if(it.textGlow&&it.textGlow!=="none")ts+="text-shadow:"+tglow(it.textGlow,it.textGlowColor)+";";
+        if(it.writingMode==="v")ts+="writing-mode:vertical-rl;";
+        const mdCls=it.inputMode==="md"?" md-rendered":"";
+        const content=it.inputMode==="md"?'<div class="md-inner">'+parseMD(it.text)+'</div>':esc(it.text).replace(/\\n/g,"<br>");
+        card.innerHTML+='<div class="card-text'+mdCls+'" style="'+ts+'">'+content+'</div>'
+      }
+      grid.appendChild(card)
+    });
+    slide.appendChild(grid);car.appendChild(slide)
+  });
+  content.appendChild(car);app.appendChild(nav);app.appendChild(tabs);app.appendChild(content);
+  attachSwipe(content)
+}
+let swipeBound=false;
+function attachSwipe(area){
+  if(swipeBound)return;swipeBound=true;
+  let sx=0,dx=0,drag=false;
+  area.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;dx=0;drag=true},{passive:true});
+  area.addEventListener("touchmove",e=>{if(!drag)return;dx=e.touches[0].clientX-sx;const dy=e.touches[0].clientY-e.touches[0].clientY;const car=document.querySelector(".carousel");if(car){car.style.transition="none";const base=-currentTab*100;const follow=(dx/area.clientWidth)*100;car.style.transform="translateX("+(base+follow)+"%)"}},{passive:true});
+  area.addEventListener("touchend",()=>{if(!drag)return;drag=false;const car=document.querySelector(".carousel");if(car)car.style.transition="transform .34s cubic-bezier(.2,.8,.2,1)";if(Math.abs(dx)>50){if(dx<0&&currentTab<data.tabs.length-1)currentTab++;if(dx>0&&currentTab>0)currentTab--}render()},{passive:true})
+}
+render();
+document.querySelectorAll(".anim-clickFade").forEach(el=>{el.addEventListener("click",()=>el.classList.toggle("faded"))});
+<\/script>
+</body>
+</html>`;
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (settings.exportTitle || 'carousel-page').replace(/\s+/g, '-') + '.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
 
     function exportCardHTML() {
@@ -1955,7 +2653,7 @@ ${cellsHTML}  </div>
       if (selectedIdx < 0) return;
       const d = cellData[selectedIdx];
       if (!d.animation || d.animation === 'none') return;
-      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : '.grid-cell';
+      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : settings.layoutMode === 'carousel' ? '.carousel-card' : '.grid-cell';
       const cell = document.querySelector(`${cellSelector}[data-idx="${selectedIdx}"]`);
       if (!cell) return;
       if (d.animation === 'clickFade') {
@@ -1975,6 +2673,8 @@ ${cellsHTML}  </div>
         b.classList.toggle('active', b.dataset.val === mode)
       );
       document.getElementById('cardSettings').style.display = mode === 'card' ? '' : 'none';
+      document.getElementById('carouselSettings').style.display = mode === 'carousel' ? '' : 'none';
+      if (mode === 'carousel') renderCarouselTabNames();
       saveSettings();
       buildGrid();
       renderAll();
@@ -1987,6 +2687,68 @@ ${cellsHTML}  </div>
       saveSettings();
       buildGrid();
       renderAll();
+    }
+
+    // ===== カルーセル管理 =====
+    let currentCarouselTab = 0;
+
+    function renderCarouselTabNames() {
+      const container = document.getElementById('carouselTabNames');
+      if (!container) return;
+      const count = settings.carouselTabCount || 3;
+      const names = settings.carouselTabNames || [];
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const row = document.createElement('div');
+        row.className = 'path-row';
+        row.style.marginBottom = '6px';
+        row.innerHTML = `<label style="min-width:60px;">タブ${i+1}</label>
+          <input type="text" class="carousel-tn-input" data-idx="${i}" value="${escHTML(names[i] || `タブ${i+1}`)}" oninput="saveSettings(); buildGrid(); renderAll();" />`;
+        container.appendChild(row);
+      }
+    }
+
+    function applyCarouselTabCount() {
+      const val = parseInt(document.getElementById('carouselTabCount').value) || 3;
+      settings.carouselTabCount = val;
+      const names = settings.carouselTabNames || [];
+      while (names.length < val) names.push(`タブ${names.length+1}`);
+      settings.carouselTabNames = names.slice(0, val);
+      if (currentCarouselTab >= val) currentCarouselTab = 0;
+      renderCarouselTabNames();
+      saveSettings();
+      buildGrid();
+      renderAll();
+    }
+
+    function updateCarouselItemCount() {
+      const val = parseInt(document.getElementById('carouselItemsPerTab').value) || 8;
+      settings.carouselItemsPerTab = Math.max(1, Math.min(24, val));
+      document.getElementById('carouselItemsPerTab').value = settings.carouselItemsPerTab;
+      saveSettings();
+      buildGrid();
+      renderAll();
+    }
+
+    function switchCarouselTab(tabIdx) {
+      currentCarouselTab = tabIdx;
+      const track = document.querySelector('.carousel-track');
+      if (track) {
+        track.style.transform = `translateX(-${tabIdx * 100}%)`;
+      }
+      document.querySelectorAll('.carousel-tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === tabIdx);
+      });
+      // update editor tab indicator
+      document.querySelectorAll('.carousel-tab-editor button').forEach((btn, i) => {
+        btn.classList.toggle('active', i === tabIdx);
+      });
+      deselectCell();
+    }
+
+    function getCarouselCellIndex(tabIdx, itemIdx) {
+      const perTab = settings.carouselItemsPerTab || 8;
+      return tabIdx * perTab + itemIdx;
     }
 
     // ===== 初期化 =====
@@ -2002,7 +2764,18 @@ ${cellsHTML}  </div>
         b.classList.toggle('active', b.dataset.val === mode)
       );
       document.getElementById('cardSettings').style.display = mode === 'card' ? '' : 'none';
+      document.getElementById('carouselSettings').style.display = mode === 'carousel' ? '' : 'none';
       document.getElementById('cardCount').value = settings.cardCount || 12;
+
+      // Carousel settings
+      document.getElementById('carouselTabCount').value = settings.carouselTabCount || 3;
+      document.getElementById('carouselGridCols').value = settings.carouselGridCols || 2;
+      document.getElementById('carouselItemsPerTab').value = settings.carouselItemsPerTab || 8;
+      document.getElementById('carouselNavTitle').value = settings.carouselNavTitle || '';
+      document.getElementById('carouselNavSub').value = settings.carouselNavSub || '';
+      document.getElementById('carouselNavColor').value = settings.carouselNavColor || '#111111';
+      if (mode === 'carousel') renderCarouselTabNames();
+
       renderPathList();
       updateCurrentPathDisplay();
 
@@ -2076,7 +2849,7 @@ ${cellsHTML}  </div>
       bindInput('cellAnimation', 'animation');
 
       document.getElementById('previewArea').addEventListener('click', (e) => {
-        if (!e.target.closest('.grid-cell') && !e.target.closest('.card-cell')) deselectCell();
+        if (!e.target.closest('.grid-cell') && !e.target.closest('.card-cell') && !e.target.closest('.carousel-card')) deselectCell();
       });
     }
 
