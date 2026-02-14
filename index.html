@@ -1388,7 +1388,7 @@
 
     // ===== マークダウンパーサー（サイズ対応） =====
     function parseMDWithSize(src) {
-      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       let html = '';
       const lines = src.split('\n');
       let i = 0;
@@ -1399,12 +1399,27 @@
         if (inOl) { html += '</ol>'; inOl = false; }
       }
 
+      function sanitizeURL(url) {
+        const decoded = url.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+        if (/^\s*(javascript|data|vbscript)\s*:/i.test(decoded)) return '';
+        return url.replace(/"/g, '&quot;');
+      }
+
       function inlineMarkup(text) {
         text = esc(text);
-        text = text.replace(/\{([^|{}]+)\|([0-9.]+)\}/g, '<span class="size-marker" style="font-size:$2em">$1</span>');
+        text = text.replace(/\{([^|{}]+)\|([0-9.]+)\}/g, (_, t, r) => {
+          const clamped = Math.min(3, Math.max(0.5, parseFloat(r) || 1));
+          return `<span class="size-marker" style="font-size:${clamped}em">${t}</span>`;
+        });
         text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-        text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
-        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
+          const safe = sanitizeURL(url);
+          return safe ? `<img src="${safe}" alt="${alt}" />` : alt;
+        });
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+          const safe = sanitizeURL(url);
+          return safe ? `<a href="${safe}" target="_blank">${label}</a>` : label;
+        });
         text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
