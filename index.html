@@ -965,6 +965,23 @@
           </div>
 
           <div class="panel-section">
+            <div class="panel-label">✨ テキスト発光</div>
+            <div class="form-row">
+              <label>発光スタイル</label>
+              <select id="textGlow">
+                <option value="none">なし</option>
+                <option value="soft">ソフトグロー</option>
+                <option value="strong">ストロンググロー</option>
+                <option value="neon">ネオン</option>
+              </select>
+            </div>
+            <div class="form-row" id="textGlowColorRow" style="display:none;">
+              <label>発光色</label>
+              <input type="color" id="textGlowColor" value="#00c8ff" />
+            </div>
+          </div>
+
+          <div class="panel-section">
             <div class="panel-label">🎨 装飾</div>
             <div class="form-row">
               <label>背景色（空=透明）</label>
@@ -1178,6 +1195,8 @@
           borderRadius: 10,
           shadow: 'none',
           glowColor: '#e94560',
+          textGlow: 'none',
+          textGlowColor: '#00c8ff',
           animation: 'none',
           image: null,
         });
@@ -1449,6 +1468,22 @@
       return map[key] || 'none';
     }
 
+    function getTextGlowShadow(style, color) {
+      if (!style || style === 'none') return 'none';
+      const c = color || '#00c8ff';
+      const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+      switch (style) {
+        case 'soft':
+          return `0 0 8px rgba(${r},${g},${b},0.6), 0 0 20px rgba(${r},${g},${b},0.3)`;
+        case 'strong':
+          return `0 0 10px rgba(${r},${g},${b},0.8), 0 0 30px rgba(${r},${g},${b},0.5), 0 0 60px rgba(${r},${g},${b},0.25)`;
+        case 'neon':
+          return `0 0 6px rgba(${r},${g},${b},0.9), 0 0 15px rgba(${r},${g},${b},0.7), 0 0 40px rgba(${r},${g},${b},0.5), 0 0 80px rgba(${r},${g},${b},0.25)`;
+        default:
+          return 'none';
+      }
+    }
+
     function hexToRgba(hex, opacity) {
       const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
       return `rgba(${r},${g},${b},${opacity/100})`;
@@ -1487,6 +1522,7 @@
         textArea.style.fontSize = d.fontSize + 'px';
         textArea.style.fontWeight = d.fontWeight;
         textArea.style.color = d.fontColor;
+        textArea.style.textShadow = getTextGlowShadow(d.textGlow, d.textGlowColor);
         if (d.inputMode === 'md' && d.text.trim()) {
           textArea.className = 'card-text-area md-rendered' + (d.writingMode === 'v' ? ' v-write' : '');
           textArea.innerHTML = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
@@ -1539,6 +1575,7 @@
       el.style.fontSize = d.fontSize + 'px';
       el.style.fontWeight = d.fontWeight;
       el.style.color = d.fontColor;
+      el.style.textShadow = getTextGlowShadow(d.textGlow, d.textGlowColor);
 
       if (d.inputMode === 'md' && d.text.trim()) {
         el.classList.add('md-rendered');
@@ -1601,6 +1638,9 @@
       document.getElementById('cellShadow').value = d.shadow || 'none';
       document.getElementById('cellGlowColor').value = d.glowColor || '#e94560';
       document.getElementById('glowColorRow').style.display = d.shadow === 'glow' ? '' : 'none';
+      document.getElementById('textGlow').value = d.textGlow || 'none';
+      document.getElementById('textGlowColor').value = d.textGlowColor || '#00c8ff';
+      document.getElementById('textGlowColorRow').style.display = (d.textGlow && d.textGlow !== 'none') ? '' : 'none';
       document.getElementById('cellAnimation').value = d.animation || 'none';
 
       const isMarkdown = d.inputMode === 'md';
@@ -1677,7 +1717,7 @@
           cardsHTML += '      <div class="card-img"><img src="' + escHTML(d.image.exportPath) + '" alt="' + escHTML(d.image.filename) + '" /></div>\n';
         }
         if (d.text.trim()) {
-          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + (d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '');
+          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + (d.textGlow && d.textGlow !== 'none' ? 'text-shadow:' + getTextGlowShadow(d.textGlow, d.textGlowColor) + ';' : '') + (d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '');
           const mdCls = d.inputMode === 'md' ? ' md-rendered' : '';
           const content = d.inputMode === 'md' ? '<div class="md-inner">' + parseMDWithSize(d.text) + '</div>' : escHTML(d.text).replace(/\n/g,'<br>');
           cardsHTML += '      <div class="card-text' + mdCls + '" style="' + ts + '">' + content + '</div>\n';
@@ -1793,7 +1833,7 @@
             ha = d.hAlign === 'center' ? 'text-align:center;justify-content:center;' : d.hAlign === 'right' ? 'text-align:right;justify-content:flex-end;' : 'text-align:left;justify-content:flex-start;';
             va = d.vAlign === 'top' ? 'align-items:flex-start;' : d.vAlign === 'bottom' ? 'align-items:flex-end;' : 'align-items:center;';
           }
-          const style = `font-family:${d.fontFamily};font-size:${d.fontSize}px;font-weight:${d.fontWeight};color:${d.fontColor};${wm}${ha}${va}`;
+          const style = `font-family:${d.fontFamily};font-size:${d.fontSize}px;font-weight:${d.fontWeight};color:${d.fontColor};${d.textGlow && d.textGlow !== 'none' ? 'text-shadow:' + getTextGlowShadow(d.textGlow, d.textGlowColor) + ';' : ''}${wm}${ha}${va}`;
           let itemStyle = `grid-column: ${c*4+1} / span 4;`;
           if (d.bgColor) itemStyle += `background:${hexToRgba(d.bgColor, d.bgOpacity ?? 100)};`;
           itemStyle += `border-radius:${d.borderRadius ?? 10}px;`;
@@ -2006,6 +2046,16 @@ ${cellsHTML}  </div>
       document.getElementById('cellGlowColor').addEventListener('input', (e) => {
         if (selectedIdx < 0) return;
         cellData[selectedIdx].glowColor = e.target.value;
+        renderCell(selectedIdx);
+      });
+      bindInput('textGlow', 'textGlow');
+      document.getElementById('textGlow').addEventListener('change', () => {
+        const hasGlow = document.getElementById('textGlow').value !== 'none';
+        document.getElementById('textGlowColorRow').style.display = hasGlow ? '' : 'none';
+      });
+      document.getElementById('textGlowColor').addEventListener('input', (e) => {
+        if (selectedIdx < 0) return;
+        cellData[selectedIdx].textGlowColor = e.target.value;
         renderCell(selectedIdx);
       });
       bindInput('cellAnimation', 'animation');
