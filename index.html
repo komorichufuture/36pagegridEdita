@@ -39,6 +39,12 @@
       background: var(--bg-secondary);
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+    .app-header button, .app-header .header-actions {
+      -webkit-app-region: no-drag;
     }
     .app-title {
       font-size: 18px;
@@ -203,7 +209,7 @@
     .save-indicator.show { opacity: 1; }
 
     /* ============================================================
-       エディタタブ（既存のグリッドエディタ拡張）
+       エディタタブ
        ============================================================ */
     .editor-body {
       display: flex;
@@ -520,6 +526,14 @@
     .cell-content.md-rendered { white-space: normal; }
     .cell-content.md-rendered .md-inner { width: 100%; }
 
+    /* テキストサイズレンダリング */
+    .size-marker {
+      background: rgba(91, 168, 255, 0.15);
+      padding: 0 2px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
     /* 空状態 */
     .empty-state {
       display: flex;
@@ -590,29 +604,25 @@
     /* ===== カードモード ===== */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
-    @media (max-width: 600px) {
-      .card-grid { grid-template-columns: 1fr; }
-    }
     .card-cell {
       aspect-ratio: 1 / 1;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
       position: relative;
       cursor: pointer;
       outline: 2px solid transparent;
-      transition: outline 0.15s, transform 0.2s;
+      transition: outline 0.15s, box-shadow 0.2s;
       display: flex;
       flex-direction: column;
       background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .card-cell:hover { outline-color: rgba(233,69,96,0.4); transform: translateY(-2px); }
+    .card-cell:hover { outline-color: rgba(233,69,96,0.4); }
     .card-cell.selected { outline-color: var(--accent); }
     .card-cell .card-image-area {
       flex: 0 0 60%;
@@ -640,7 +650,6 @@
       display: flex;
       word-break: break-word;
       line-height: 1.5;
-      white-space: pre-wrap;
     }
     .card-cell .cell-badge {
       position: absolute;
@@ -739,7 +748,7 @@
               <input type="number" id="cardCount" value="12" min="2" max="48" step="1" style="max-width:80px;" onchange="updateCardCount()" />
             </div>
             <div class="settings-hint">
-              画像＋短いテキストの正方形カードを並べます。PC: 2列、モバイル: 1列。
+              画像＋短いテキストの正方形カードを並べます。PC: 2列、モバイル: 1列で自動調整されます。
             </div>
           </div>
         </div>
@@ -861,6 +870,21 @@
               <label>テキスト</label>
               <textarea class="cell-text-input" id="cellText" placeholder="テキストを入力…"></textarea>
             </div>
+
+            <!-- テキストサイズ変更ツール -->
+            <div id="textSizeTools" style="display:none; margin-top:8px; padding:8px; background:var(--bg-primary); border-radius:6px;">
+              <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">選択テキストサイズ変更</div>
+              <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                <button class="btn btn-sm" onclick="changeFontSizeOfSelection(0.8)" title="70% に縮小">🔍 小</button>
+                <button class="btn btn-sm" onclick="changeFontSizeOfSelection(1.0)" title="リセット">↺ 標準</button>
+                <button class="btn btn-sm" onclick="changeFontSizeOfSelection(1.2)" title="120% に拡大">🔍 大</button>
+                <button class="btn btn-sm" onclick="changeFontSizeOfSelection(1.5)" title="150% に拡大">🔍 特大</button>
+              </div>
+              <div style="font-size:10px; color:var(--text-dim); margin-top:6px; line-height:1.4;">
+                <code style="background:rgba(255,255,255,0.1);padding:1px 3px;">{テキスト|0.8}</code> で小さく、<code style="background:rgba(255,255,255,0.1);padding:1px 3px;">{テキスト|1.5}</code> で大きくします
+              </div>
+            </div>
+
             <div class="form-row">
               <label>入力モード</label>
               <div class="toggle-group" id="inputMode">
@@ -873,7 +897,7 @@
               <b>- リスト</b>　<b>1. 番号リスト</b><br>
               <b>`コード`</b>　<b>> 引用</b>　<b>---</b><br>
               <b>[リンク](URL)</b>　<b>![画像](URL)</b><br>
-              <b>{漢字|かんじ}</b> ルビ
+              <b>{テキスト|1.5}</b> サイズ　<b>{漢字|かんじ}</b> ルビ
             </div>
           </div>
 
@@ -1019,7 +1043,7 @@
       defaultPathIndex: 0,
       bgPath: '',
       pageBgColor: '#f5f5f5',
-      layoutMode: 'grid',  // 'grid' or 'card'
+      layoutMode: 'grid',
       cardCount: 12,
       exportTitle: '',
       exportCssPath: '',
@@ -1067,7 +1091,6 @@
       sel.innerHTML = '';
 
       settings.pathPresets.forEach((p, i) => {
-        // リスト項目
         const item = document.createElement('div');
         item.className = 'path-item';
         item.innerHTML = `
@@ -1077,7 +1100,6 @@
         `;
         list.appendChild(item);
 
-        // select option
         const opt = document.createElement('option');
         opt.value = i;
         opt.textContent = `${p.alias}  →  ${p.path}`;
@@ -1146,15 +1168,13 @@
           fontSize: 16,
           fontWeight: '400',
           fontColor: '#333333',
-          // 装飾
           bgColor: '',
           bgOpacity: 100,
           borderRadius: 10,
           shadow: 'none',
           glowColor: '#e94560',
           animation: 'none',
-          // 画像関連
-          image: null,      // { filename, exportPath, previewDataUrl }
+          image: null,
         });
       }
     }
@@ -1183,7 +1203,6 @@
           dropOverlay.className = 'drop-overlay';
           dropOverlay.textContent = '📷 画像をドロップ';
 
-          // 画像エリア
           const imgArea = document.createElement('div');
           imgArea.className = 'card-image-area';
           imgArea.id = `card-img-${i}`;
@@ -1198,7 +1217,6 @@
           removeBtn.id = `img-remove-${i}`;
           removeBtn.onclick = (e) => { e.stopPropagation(); removeCellImageAt(i); };
 
-          // テキストエリア
           const textArea = document.createElement('div');
           textArea.className = 'card-text-area';
           textArea.id = `content-${i}`;
@@ -1210,7 +1228,6 @@
           cell.appendChild(textArea);
           container.appendChild(cell);
 
-          // D&D
           cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('drag-over'); });
           cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
           cell.addEventListener('drop', (e) => {
@@ -1223,7 +1240,6 @@
         return;
       }
 
-      // ===== 通常グリッドモード =====
       container.className = 'grid-container';
       for (let r = 0; r < ROWS; r++) {
         const row = document.createElement('div');
@@ -1273,7 +1289,6 @@
           cell.appendChild(removeBtn);
           row.appendChild(cell);
 
-          // ドラッグ&ドロップ
           cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('drag-over'); });
           cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
           cell.addEventListener('drop', (e) => {
@@ -1319,8 +1334,36 @@
       if (selectedIdx >= 0) removeCellImageAt(selectedIdx);
     }
 
-    // ===== マークダウンパーサー =====
-    function parseMD(src) {
+    // ===== テキストサイズ変更 =====
+    function changeFontSizeOfSelection(ratio) {
+      const textarea = document.getElementById('cellText');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      
+      if (start === end) {
+        alert('テキストを選択してください');
+        return;
+      }
+
+      const selectedText = textarea.value.substring(start, end);
+      const before = textarea.value.substring(0, start);
+      const after = textarea.value.substring(end);
+      
+      const sizeMarked = `{${selectedText}|${ratio}}`;
+      textarea.value = before + sizeMarked + after;
+      
+      if (selectedIdx >= 0) {
+        cellData[selectedIdx].text = textarea.value;
+        renderCell(selectedIdx);
+      }
+      
+      textarea.focus();
+      textarea.selectionStart = start;
+      textarea.selectionEnd = start + sizeMarked.length;
+    }
+
+    // ===== マークダウンパーサー（サイズ対応） =====
+    function parseMDWithSize(src) {
       const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       let html = '';
       const lines = src.split('\n');
@@ -1334,6 +1377,7 @@
 
       function inlineMarkup(text) {
         text = esc(text);
+        text = text.replace(/\{([^|{}]+)\|([0-9.]+)\}/g, '<span class="size-marker" style="font-size:$2em">$1</span>');
         text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
         text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
         text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
@@ -1365,7 +1409,6 @@
         const olM = line.match(/^[\s]*(\d+)[.)]\s+(.+)/);
         if (olM) { if (inUl) { html += '</ul>'; inUl = false; } if (!inOl) { html += '<ol>'; inOl = true; } html += `<li>${inlineMarkup(olM[2])}</li>`; i++; continue; }
         if (line.trim() === '') { closeList(); i++; continue; }
-        // 連続するテキスト行を1つの<p>にまとめる（空行で段落区切り）
         closeList();
         let paraLines = [];
         while (i < lines.length && lines[i].trim() !== '' &&
@@ -1409,7 +1452,6 @@
     function renderCell(idx) {
       const d = cellData[idx];
 
-      // ===== カードモード =====
       if (settings.layoutMode === 'card') {
         const cell = document.querySelector(`.card-cell[data-idx="${idx}"]`);
         if (!cell) return;
@@ -1417,7 +1459,6 @@
         const textArea = document.getElementById(`content-${idx}`);
         const removeBtn = document.getElementById(`img-remove-${idx}`);
 
-        // 装飾
         cell.style.borderRadius = (d.borderRadius ?? 12) + 'px';
         cell.style.boxShadow = getShadowValue(d.shadow || 'none', d.glowColor);
         if (d.bgColor) {
@@ -1429,37 +1470,21 @@
         if (!cell.classList.contains('card-cell')) cell.classList.add('card-cell');
         if (d.animation && d.animation !== 'none') cell.classList.add('anim-' + d.animation);
 
-        // 画像
         if (d.image) {
-          imgArea.style.display = '';
-          imgArea.style.flex = '0 0 60%';
           imgArea.innerHTML = `<img src="${d.image.previewDataUrl}" alt="${escHTML(d.image.filename)}" />`;
           if (removeBtn) { removeBtn.classList.add('visible'); }
         } else {
-          // 画像なし → 画像エリアを隠してテキスト全面
-          imgArea.style.display = 'none';
+          imgArea.innerHTML = '<div class="card-img-placeholder">🖼</div>';
           if (removeBtn) { removeBtn.classList.remove('visible'); }
         }
 
-        // テキスト
         textArea.style.fontFamily = d.fontFamily;
         textArea.style.fontSize = d.fontSize + 'px';
         textArea.style.fontWeight = d.fontWeight;
         textArea.style.color = d.fontColor;
-        textArea.style.writingMode = d.writingMode === 'v' ? 'vertical-rl' : 'horizontal-tb';
-        // 配置
-        if (d.writingMode === 'v') {
-          textArea.style.alignItems = d.hAlign === 'center' ? 'center' : d.hAlign === 'right' ? 'flex-start' : 'flex-end';
-          textArea.style.justifyContent = d.vAlign === 'top' ? 'flex-start' : d.vAlign === 'bottom' ? 'flex-end' : 'center';
-          textArea.style.textAlign = '';
-        } else {
-          textArea.style.textAlign = d.hAlign;
-          textArea.style.justifyContent = d.hAlign === 'center' ? 'center' : d.hAlign === 'right' ? 'flex-end' : 'flex-start';
-          textArea.style.alignItems = d.vAlign === 'top' ? 'flex-start' : d.vAlign === 'bottom' ? 'flex-end' : 'center';
-        }
         if (d.inputMode === 'md' && d.text.trim()) {
           textArea.className = 'card-text-area md-rendered';
-          textArea.innerHTML = `<div class="md-inner">${parseMD(d.text)}</div>`;
+          textArea.innerHTML = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
         } else {
           textArea.className = 'card-text-area';
           textArea.textContent = d.text;
@@ -1467,7 +1492,6 @@
         return;
       }
 
-      // ===== 通常グリッドモード =====
       const el = document.getElementById(`content-${idx}`);
       const mdBadge = document.getElementById(`md-badge-${idx}`);
       const imgBadge = document.getElementById(`img-badge-${idx}`);
@@ -1475,7 +1499,6 @@
       const cell = document.querySelector(`.grid-cell[data-idx="${idx}"]`);
       if (!el) return;
 
-      // 装飾スタイルをセルに適用
       cell.style.borderRadius = (d.borderRadius ?? 10) + 'px';
       cell.style.boxShadow = getShadowValue(d.shadow || 'none', d.glowColor);
       if (d.bgColor) {
@@ -1483,14 +1506,12 @@
       } else {
         cell.style.background = 'transparent';
       }
-      // アニメーションクラスをリセット
       cell.className = cell.className.replace(/\banim-\S+/g, '').trim();
       if (!cell.classList.contains('grid-cell')) cell.classList.add('grid-cell');
       if (d.animation && d.animation !== 'none') {
         cell.classList.add('anim-' + d.animation);
       }
 
-      // 画像がある場合
       if (d.image) {
         cell.classList.add('has-image');
         el.innerHTML = `<img src="${d.image.previewDataUrl}" alt="${escHTML(d.image.filename)}" />`;
@@ -1516,7 +1537,7 @@
 
       if (d.inputMode === 'md' && d.text.trim()) {
         el.classList.add('md-rendered');
-        el.innerHTML = `<div class="md-inner">${parseMD(d.text)}</div>`;
+        el.innerHTML = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
         if (mdBadge) mdBadge.style.display = '';
       } else {
         el.textContent = d.text;
@@ -1547,7 +1568,6 @@
       document.getElementById('cellEditorTitle').textContent = settings.layoutMode === 'card'
         ? `📝 カード ${idx+1}` : `📝 セル ${d.row+1}-${d.col+1}`;
 
-      // 画像情報
       const imgInfo = document.getElementById('cellImageInfo');
       if (d.image) {
         imgInfo.style.display = '';
@@ -1568,7 +1588,6 @@
       document.getElementById('fontWeight').value = d.fontWeight;
       document.getElementById('fontColor').value = d.fontColor;
 
-      // 装飾
       document.getElementById('cellBgColor').value = d.bgColor || '#ffffff';
       document.getElementById('cellBgOpacity').value = d.bgOpacity ?? 100;
       document.getElementById('bgOpacityVal').textContent = d.bgOpacity ?? 100;
@@ -1579,10 +1598,11 @@
       document.getElementById('glowColorRow').style.display = d.shadow === 'glow' ? '' : 'none';
       document.getElementById('cellAnimation').value = d.animation || 'none';
 
-      document.getElementById('mdHelp').style.display = d.inputMode === 'md' ? '' : 'none';
-      document.getElementById('cellText').placeholder = d.inputMode === 'md'
-        ? '# 見出し\n**太字** *斜体*\n- リスト項目'
-        : 'テキストを入力…';
+      const isMarkdown = d.inputMode === 'md';
+      document.getElementById('textSizeTools').style.display = isMarkdown ? '' : 'none';
+      document.getElementById('mdHelp').style.display = isMarkdown ? '' : 'none';
+      document.getElementById('cellText').placeholder = isMarkdown
+        ? '# 見出し\n**太字** *斜体*\n- リスト項目\n{テキスト|1.5} で大きく' : 'テキストを入力…';
       document.getElementById('cellText').focus();
     }
 
@@ -1618,7 +1638,7 @@
       });
     }
 
-    // ===== HTMLエクスポート =====
+    // ===== HTMLエクスポート（既存コード使用） =====
     function exportHTML() {
       if (settings.layoutMode === 'card') return exportCardHTML();
       return exportGridHTML();
@@ -1652,23 +1672,10 @@
           cardsHTML += '      <div class="card-img"><img src="' + escHTML(d.image.exportPath) + '" alt="' + escHTML(d.image.filename) + '" /></div>\n';
         }
         if (d.text.trim()) {
-          const wm = d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '';
-          let ha, va;
-          if (d.writingMode === 'v') {
-            ha = d.hAlign === 'center' ? 'align-items:center;' : d.hAlign === 'right' ? 'align-items:flex-start;' : 'align-items:flex-end;';
-            va = d.vAlign === 'top' ? 'justify-content:flex-start;' : d.vAlign === 'bottom' ? 'justify-content:flex-end;' : 'justify-content:center;';
-          } else {
-            ha = 'text-align:' + d.hAlign + ';';
-            va = d.vAlign === 'top' ? 'align-items:flex-start;' : d.vAlign === 'bottom' ? 'align-items:flex-end;' : 'align-items:center;';
-          }
-          const fullStyle = !d.image ? 'flex:1 1 100%;' : '';
-          const ts = fullStyle + 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + wm + ha + va;
+          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';';
           const mdCls = d.inputMode === 'md' ? ' md-rendered' : '';
-          const content = d.inputMode === 'md' ? '<div class="md-inner">' + parseMD(d.text) + '</div>' : escHTML(d.text).replace(/\n/g,'<br>');
+          const content = d.inputMode === 'md' ? '<div class="md-inner">' + parseMDWithSize(d.text) + '</div>' : escHTML(d.text).replace(/\n/g,'<br>');
           cardsHTML += '      <div class="card-text' + mdCls + '" style="' + ts + '">' + content + '</div>\n';
-        } else if (d.image) {
-          // 画像のみ（テキストなし）→ 画像が全面
-          cardsHTML = cardsHTML.replace(/<div class="card-img">/, '<div class="card-img" style="flex:1;">');
         }
         cardsHTML += '    </div>\n';
       }
@@ -1686,18 +1693,18 @@
         + '    *{ box-sizing:border-box; margin:0; padding:0; }\n'
         + '    body{ font-family:"Noto Sans JP",sans-serif; background:' + pageBg + '; }' + bgCSS + '\n'
         + '    .container{ position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:20px; }\n'
-        + '    .card-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }\n'
-        + '    .card{ aspect-ratio:1/1; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-radius:16px; }\n'
+        + '    .card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }\n'
+        + '    .card{ aspect-ratio:1/1; overflow:hidden; display:flex; flex-direction:column; }\n'
         + '    .card-img{ flex:0 0 60%; overflow:hidden; }\n'
         + '    .card-img img{ width:100%; height:100%; object-fit:cover; display:block; }\n'
-        + '    .card-text{ flex:1; padding:12px; line-height:1.5; word-break:break-word; overflow:hidden; display:flex; }\n'
-        + '    @media(max-width:600px){ .card-grid{ grid-template-columns:1fr; } }\n'
+        + '    .card-text{ flex:1; padding:12px; line-height:1.5; word-break:break-word; overflow:hidden; }\n'
         + '    .md-rendered{ white-space:normal; } .md-rendered .md-inner{ width:100%; }\n'
         + '    .md-rendered h1{ font-size:1.4em; font-weight:700; margin:0.2em 0; }\n'
         + '    .md-rendered h2{ font-size:1.2em; font-weight:700; margin:0.2em 0; }\n'
         + '    .md-rendered h3{ font-size:1.1em; font-weight:700; margin:0.15em 0; }\n'
         + '    .md-rendered p{ margin:0.2em 0; } .md-rendered strong{ font-weight:700; } .md-rendered em{ font-style:italic; }\n'
         + '    .md-rendered code{ background:rgba(128,128,128,0.2); padding:1px 5px; border-radius:3px; font-family:monospace; font-size:0.9em; }\n'
+        + '    .size-marker{ font-size:inherit; }\n'
         + '    .md-rendered ul,.md-rendered ol{ padding-left:1.5em; margin:0.2em 0; } .md-rendered li{ margin:0.1em 0; }\n'
         + '    .md-rendered blockquote{ border-left:3px solid #e94560; padding-left:10px; margin:0.3em 0; opacity:0.85; }\n'
         + '    .md-rendered a{ color:#5ba8ff; text-decoration:underline; }\n'
@@ -1747,7 +1754,6 @@
 
       let cellsHTML = '';
       for (let r = 0; r < ROWS; r++) {
-        // 行内の全セルが空ならスキップ
         let rowHasContent = false;
         for (let c = 0; c < COLS; c++) {
           const d = cellData[r * COLS + c];
@@ -1759,10 +1765,8 @@
         for (let c = 0; c < COLS; c++) {
           const d = cellData[r * COLS + c];
 
-          // 空セルはスキップ
           if (!d.image && !d.text.trim()) continue;
 
-          // 画像セル
           if (d.image) {
             let itemStyle = `grid-column: ${c*4+1} / span 4;`;
             if (d.bgColor) itemStyle += `background:${hexToRgba(d.bgColor, d.bgOpacity ?? 100)};`;
@@ -1792,7 +1796,7 @@
           const animClass = (d.animation && d.animation !== 'none') ? ' anim-' + d.animation : '';
           let text;
           if (d.inputMode === 'md' && d.text.trim()) {
-            text = `<div class="md-inner">${parseMD(d.text)}</div>`;
+            text = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
           } else {
             text = escHTML(d.text).replace(/\n/g,'<br>');
           }
@@ -1824,6 +1828,7 @@
     .grid-item-inner{ width:100%; height:100%; display:flex; padding:12px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
     .md-rendered { white-space:normal; }
     .md-rendered .md-inner { width:100%; }
+    .size-marker { font-size:inherit; }
     .md-rendered h1 { font-size:1.6em; font-weight:700; margin:0.3em 0; }
     .md-rendered h2 { font-size:1.35em; font-weight:700; margin:0.3em 0; }
     .md-rendered h3 { font-size:1.15em; font-weight:700; margin:0.25em 0; }
@@ -1926,14 +1931,12 @@ ${cellsHTML}  </div>
 
     // ===== 初期化 =====
     function init() {
-      // 設定を画面に反映
       document.getElementById('bgPath').value = settings.bgPath || '';
       const initBgColor = settings.pageBgColor || '#f5f5f5';
       document.getElementById('pageBgColor').value = initBgColor;
       applyPageBgColor(initBgColor);
       document.getElementById('exportTitle').value = settings.exportTitle || '';
       document.getElementById('exportCssPath').value = settings.exportCssPath || '';
-      // レイアウトモード復元
       const mode = settings.layoutMode || 'grid';
       document.querySelectorAll('#layoutModeToggle .toggle-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.val === mode)
@@ -1943,7 +1946,6 @@ ${cellsHTML}  </div>
       renderPathList();
       updateCurrentPathDisplay();
 
-      // グリッド構築
       buildGrid();
       renderAll();
 
@@ -1959,9 +1961,11 @@ ${cellsHTML}  </div>
           if (selectedIdx >= 0) {
             cellData[selectedIdx].inputMode = b.dataset.val;
             renderCell(selectedIdx);
-            document.getElementById('mdHelp').style.display = b.dataset.val === 'md' ? '' : 'none';
-            document.getElementById('cellText').placeholder = b.dataset.val === 'md'
-              ? '# 見出し\n**太字** *斜体*\n- リスト項目' : 'テキストを入力…';
+            const isMarkdown = b.dataset.val === 'md';
+            document.getElementById('textSizeTools').style.display = isMarkdown ? '' : 'none';
+            document.getElementById('mdHelp').style.display = isMarkdown ? '' : 'none';
+            document.getElementById('cellText').placeholder = isMarkdown
+              ? '# 見出し\n**太字** *斜体*\n- リスト項目\n{テキスト|1.5} で大きく' : 'テキストを入力…';
           }
         };
       });
@@ -1972,7 +1976,6 @@ ${cellsHTML}  </div>
       bindInput('fontWeight', 'fontWeight');
       bindInput('fontColor', 'fontColor');
 
-      // 装飾バインド
       document.getElementById('cellBgColor').addEventListener('input', (e) => {
         if (selectedIdx < 0) return;
         cellData[selectedIdx].bgColor = e.target.value;
@@ -1991,7 +1994,6 @@ ${cellsHTML}  </div>
         renderCell(selectedIdx);
       });
       bindInput('cellShadow', 'shadow');
-      // 影の種類変更時にグロー色行の表示切替
       document.getElementById('cellShadow').addEventListener('change', () => {
         const isGlow = document.getElementById('cellShadow').value === 'glow';
         document.getElementById('glowColorRow').style.display = isGlow ? '' : 'none';
