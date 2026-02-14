@@ -604,7 +604,7 @@
     /* ===== カードモード ===== */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       max-width: 1200px;
       margin: 0 auto;
@@ -650,6 +650,11 @@
       display: flex;
       word-break: break-word;
       line-height: 1.5;
+    }
+    .card-cell .card-text-area.v-write {
+      writing-mode: vertical-rl;
+      overflow-x: auto;
+      overflow-y: hidden;
     }
     .card-cell .cell-badge {
       position: absolute;
@@ -1483,10 +1488,10 @@
         textArea.style.fontWeight = d.fontWeight;
         textArea.style.color = d.fontColor;
         if (d.inputMode === 'md' && d.text.trim()) {
-          textArea.className = 'card-text-area md-rendered';
+          textArea.className = 'card-text-area md-rendered' + (d.writingMode === 'v' ? ' v-write' : '');
           textArea.innerHTML = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
         } else {
-          textArea.className = 'card-text-area';
+          textArea.className = 'card-text-area' + (d.writingMode === 'v' ? ' v-write' : '');
           textArea.textContent = d.text;
         }
         return;
@@ -1672,7 +1677,7 @@
           cardsHTML += '      <div class="card-img"><img src="' + escHTML(d.image.exportPath) + '" alt="' + escHTML(d.image.filename) + '" /></div>\n';
         }
         if (d.text.trim()) {
-          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';';
+          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + (d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '');
           const mdCls = d.inputMode === 'md' ? ' md-rendered' : '';
           const content = d.inputMode === 'md' ? '<div class="md-inner">' + parseMDWithSize(d.text) + '</div>' : escHTML(d.text).replace(/\n/g,'<br>');
           cardsHTML += '      <div class="card-text' + mdCls + '" style="' + ts + '">' + content + '</div>\n';
@@ -1693,7 +1698,7 @@
         + '    *{ box-sizing:border-box; margin:0; padding:0; }\n'
         + '    body{ font-family:"Noto Sans JP",sans-serif; background:' + pageBg + '; }' + bgCSS + '\n'
         + '    .container{ position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:20px; }\n'
-        + '    .card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }\n'
+        + '    .card-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }\n'
         + '    .card{ aspect-ratio:1/1; overflow:hidden; display:flex; flex-direction:column; }\n'
         + '    .card-img{ flex:0 0 60%; overflow:hidden; }\n'
         + '    .card-img img{ width:100%; height:100%; object-fit:cover; display:block; }\n'
