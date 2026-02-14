@@ -789,7 +789,57 @@
     .cc-text-area.md-rendered ul, .cc-text-area.md-rendered ol { padding-left: 1.2em; margin: 0.1em 0; }
     .cc-text-area.md-rendered li { margin: 0.05em 0; }
     .cc-text-area.md-rendered a { color: #5ba8ff; text-decoration: underline; }
-    .cc-text-area.v-write { writing-mode: vertical-rl; }
+    .cc-text-area.v-write { writing-mode: vertical-rl; min-height: 220px; overflow-x: auto; }
+    .carousel-card:has(.cc-text-area.v-write) { min-height: 240px; }
+
+    /* carousel item list */
+    .c-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-size: 12px;
+      background: var(--bg-primary);
+    }
+    .c-item:hover { border-color: rgba(233,69,96,0.4); }
+    .c-item.selected { border-color: var(--accent); background: rgba(233,69,96,0.08); }
+    .c-item .c-item-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .c-item .c-item-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .c-item-btns {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .c-item-btns button {
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-secondary);
+      color: var(--text-dim);
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .c-item-btns button:hover { border-color: var(--accent); color: var(--text); }
 
     /* ===== カードモード ===== */
     .card-grid {
@@ -948,44 +998,8 @@
             </div>
           </div>
           <div id="carouselSettings" style="display:none; margin-top:12px;">
-            <div class="path-row">
-              <label>タブ数</label>
-              <select id="carouselTabCount" onchange="applyCarouselTabCount()">
-                <option value="2">2</option>
-                <option value="3" selected>3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-            </div>
-            <div class="path-row">
-              <label>列数</label>
-              <select id="carouselGridCols" onchange="saveSettings(); buildGrid(); renderAll();">
-                <option value="2" selected>2列</option>
-                <option value="3">3列</option>
-              </select>
-            </div>
-            <div class="path-row">
-              <label>1タブあたりカード数</label>
-              <input type="number" id="carouselItemsPerTab" value="8" min="1" max="24" step="1" style="max-width:80px;" onchange="updateCarouselItemCount()" />
-            </div>
-            <div class="path-row">
-              <label>ナビタイトル</label>
-              <input type="text" id="carouselNavTitle" placeholder="モバイルダッシュボード" oninput="saveSettings(); buildGrid(); renderAll();" />
-            </div>
-            <div class="path-row">
-              <label>サブテキスト</label>
-              <input type="text" id="carouselNavSub" placeholder="すぐ下でカテゴリを切替" oninput="saveSettings(); buildGrid(); renderAll();" />
-            </div>
-            <div class="path-row">
-              <label>ナビ色</label>
-              <input type="color" id="carouselNavColor" value="#111111" oninput="saveSettings(); buildGrid(); renderAll();" style="max-width:80px;" />
-            </div>
-            <div style="margin-top:10px;">
-              <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">タブ名編集</div>
-              <div id="carouselTabNames"></div>
-            </div>
             <div class="settings-hint">
-              タブをタップ or スワイプでカルーセル切り替え。KaruseruスタイルのモバイルUIです。
+              カルーセルの設定（ナビバー、タブ、アイテムの追加・削除）は「✏ エディタ」タブの左パネルから行えます。
             </div>
           </div>
         </div>
@@ -1083,6 +1097,61 @@
           <div style="font-family:'Courier New',monospace; font-size:13px; color:var(--success);" id="currentPathDisplay">/images/</div>
           <div style="font-size:10px; color:var(--text-dim); margin-top:4px;">
             セルに画像をD&amp;Dすると自動でパスが設定されます
+          </div>
+        </div>
+
+        <!-- ===== カルーセル管理パネル ===== -->
+        <div id="carouselPanel" style="display:none;">
+          <div class="panel-section">
+            <div class="panel-label">🔝 ナビバー</div>
+            <div class="form-row">
+              <label>タイトル</label>
+              <input type="text" id="cNavTitle" placeholder="タイトル" oninput="updateCarouselNav()" />
+            </div>
+            <div class="form-row">
+              <label>サブテキスト</label>
+              <input type="text" id="cNavSub" placeholder="サブテキスト" oninput="updateCarouselNav()" />
+            </div>
+            <div style="display:flex; gap:8px;">
+              <div style="flex:1;">
+                <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px;">ナビ色</label>
+                <input type="color" id="cNavColor" value="#111111" oninput="updateCarouselNav()" />
+              </div>
+              <div style="flex:1;">
+                <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px;">列数</label>
+                <select id="cGridCols" onchange="updateCarouselNav()">
+                  <option value="2">2列</option>
+                  <option value="3">3列</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-label">📑 タブ</div>
+            <div class="form-row">
+              <label>タブ数</label>
+              <select id="cTabCount" onchange="changeCarouselTabCount()">
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div id="cTabSeg" style="display:flex; gap:0; border:1px solid var(--border); border-radius:6px; overflow:hidden; margin-top:8px;"></div>
+            <div class="form-row" style="margin-top:8px;">
+              <label>タブ名</label>
+              <input type="text" id="cTabName" oninput="renameCarouselTab()" />
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-label">📦 アイテム</div>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <button class="btn btn-primary btn-sm" onclick="addCarouselItem()">＋ 追加</button>
+              <button class="btn btn-sm" onclick="duplicateCarouselItem()">複製</button>
+            </div>
+            <div id="cItemList" style="max-height:240px; overflow:auto;"></div>
           </div>
         </div>
 
@@ -1219,7 +1288,7 @@
               <label>背景色（空=透明）</label>
               <div style="display:flex; gap:6px; align-items:center;">
                 <input type="color" id="cellBgColor" value="#ffffff" style="flex:1;" />
-                <button class="btn btn-sm" onclick="document.getElementById('cellBgColor').value='#ffffff'; if(selectedIdx>=0){cellData[selectedIdx].bgColor='';renderCell(selectedIdx);}">クリア</button>
+                <button class="btn btn-sm" onclick="document.getElementById('cellBgColor').value='#ffffff'; var t=getEditTarget(); if(t){t.bgColor='';afterEditTarget();}">クリア</button>
               </div>
             </div>
             <div class="form-row">
@@ -1329,17 +1398,6 @@
       settings.cardCount = parseInt(document.getElementById('cardCount').value) || 12;
       const sel = document.getElementById('defaultPathSelect');
       settings.defaultPathIndex = parseInt(sel.value) || 0;
-      // Carousel
-      settings.carouselGridCols = parseInt(document.getElementById('carouselGridCols').value) || 2;
-      settings.carouselItemsPerTab = parseInt(document.getElementById('carouselItemsPerTab').value) || 8;
-      settings.carouselNavTitle = document.getElementById('carouselNavTitle').value;
-      settings.carouselNavSub = document.getElementById('carouselNavSub').value;
-      settings.carouselNavColor = document.getElementById('carouselNavColor').value;
-      // save tab names
-      const tnInputs = document.querySelectorAll('.carousel-tn-input');
-      if (tnInputs.length > 0) {
-        settings.carouselTabNames = Array.from(tnInputs).map(el => el.value || `タブ${parseInt(el.dataset.idx)+1}`);
-      }
       localStorage.setItem('blogEditorSettings', JSON.stringify(settings));
       showSaveIndicator();
       updateCurrentPathDisplay();
@@ -1419,7 +1477,15 @@
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.id === `tab-${tabId}`));
-      if (tabId === 'editor') updateCurrentPathDisplay();
+      if (tabId === 'editor') {
+        updateCurrentPathDisplay();
+        if (settings.layoutMode === 'carousel') {
+          document.getElementById('carouselPanel').style.display = '';
+          renderCarouselSidebar();
+        } else {
+          document.getElementById('carouselPanel').style.display = 'none';
+        }
+      }
     }
 
     // ============================================================
@@ -1466,58 +1532,59 @@
       if (settings.layoutMode === 'carousel') {
         container.className = 'grid-container';
         container.style.padding = '0';
-        const tabCount = settings.carouselTabCount || 3;
-        const perTab = settings.carouselItemsPerTab || 8;
-        const cols = settings.carouselGridCols || 2;
-        const names = settings.carouselTabNames || [];
-        const navColor = settings.carouselNavColor || '#111111';
 
-        // Build carousel root
+        // Show carousel panel
+        document.getElementById('carouselPanel').style.display = '';
+
         const root = document.createElement('div');
         root.className = 'carousel-root';
 
         // Nav
         const nav = document.createElement('div');
         nav.className = 'carousel-nav';
-        nav.style.background = navColor;
-        nav.innerHTML = `<div><h2>${escHTML(settings.carouselNavTitle || '')}</h2><div class="cnav-sub">${escHTML(settings.carouselNavSub || '')}</div></div>`;
+        nav.style.background = carouselData.navColor || '#111111';
+        nav.innerHTML = `<div><h2>${escHTML(carouselData.navTitle || '')}</h2><div class="cnav-sub">${escHTML(carouselData.navSub || '')}</div></div>`;
         root.appendChild(nav);
 
         // Tabs
         const tabs = document.createElement('div');
         tabs.className = 'carousel-tabs';
-        for (let t = 0; t < tabCount; t++) {
+        carouselData.tabs.forEach((tab, t) => {
           const btn = document.createElement('button');
           btn.className = 'carousel-tab-btn' + (t === currentCarouselTab ? ' active' : '');
-          btn.textContent = names[t] || `タブ${t+1}`;
+          btn.textContent = tab.name || `タブ${t + 1}`;
           btn.onclick = () => switchCarouselTab(t);
           tabs.appendChild(btn);
-        }
+        });
         root.appendChild(tabs);
 
-        // Content area
+        // Content
         const content = document.createElement('div');
         content.className = 'carousel-content';
         const track = document.createElement('div');
         track.className = 'carousel-track';
         track.style.transform = `translateX(-${currentCarouselTab * 100}%)`;
 
-        for (let t = 0; t < tabCount; t++) {
+        carouselData.tabs.forEach((tab, t) => {
           const slide = document.createElement('div');
           slide.className = 'carousel-slide';
           const grid = document.createElement('div');
-          grid.className = `carousel-grid cg-${cols}`;
+          grid.className = `carousel-grid cg-${carouselData.gridCols || 2}`;
 
-          for (let i = 0; i < perTab; i++) {
-            const idx = getCarouselCellIndex(t, i);
+          (tab.items || []).forEach((item, i) => {
             const card = document.createElement('div');
             card.className = 'carousel-card';
-            card.dataset.idx = idx;
-            card.onclick = (e) => { if (!e.target.closest('.image-remove-btn')) selectCell(idx); };
+            card.dataset.tab = t;
+            card.dataset.item = i;
+            card.onclick = (e) => {
+              if (e.target.closest('.image-remove-btn')) return;
+              if (currentCarouselTab !== t) switchCarouselTab(t);
+              selectCarouselItem(i);
+            };
 
             const badge = document.createElement('div');
             badge.className = 'cell-badge';
-            badge.textContent = `${t+1}-${i+1}`;
+            badge.textContent = `${i + 1}`;
 
             const dropOverlay = document.createElement('div');
             dropOverlay.className = 'drop-overlay';
@@ -1525,18 +1592,22 @@
 
             const imgArea = document.createElement('div');
             imgArea.className = 'cc-img-area';
-            imgArea.id = `carousel-img-${idx}`;
             imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
 
             const removeBtn = document.createElement('button');
             removeBtn.className = 'image-remove-btn';
             removeBtn.textContent = '✕';
-            removeBtn.id = `img-remove-${idx}`;
-            removeBtn.onclick = (e) => { e.stopPropagation(); removeCellImageAt(idx); };
+            removeBtn.onclick = (e) => {
+              e.stopPropagation();
+              item.image = null;
+              saveCarouselData();
+              buildGrid();
+              renderAllCarousel();
+              renderCarouselItemList();
+            };
 
             const textArea = document.createElement('div');
             textArea.className = 'cc-text-area';
-            textArea.id = `content-${idx}`;
 
             card.appendChild(badge);
             card.appendChild(dropOverlay);
@@ -1550,23 +1621,31 @@
             card.addEventListener('drop', (e) => {
               e.preventDefault();
               card.classList.remove('drag-over');
-              handleImageDrop(idx, e.dataTransfer);
+              carouselImageDrop(t, i, e.dataTransfer);
             });
+          });
+
+          if (tab.items.length === 0) {
+            const empty = document.createElement('div');
+            empty.style.cssText = 'grid-column:1/-1;text-align:center;padding:40px 10px;color:#999;font-size:13px;';
+            empty.textContent = '「＋追加」でアイテムを作成';
+            grid.appendChild(empty);
           }
+
           slide.appendChild(grid);
           track.appendChild(slide);
-        }
+        });
 
         content.appendChild(track);
         root.appendChild(content);
         container.appendChild(root);
-
-        // Attach swipe
         attachCarouselSwipe(content);
-
-        renderAll();
+        renderAllCarousel();
         return;
       }
+
+      // Hide carousel panel for non-carousel modes
+      document.getElementById('carouselPanel').style.display = 'none';
 
       if (settings.layoutMode === 'card') {
         container.className = 'card-grid';
@@ -1778,20 +1857,42 @@
       cellData[idx].image = null;
       const cell = document.querySelector(`.grid-cell[data-idx="${idx}"]`);
       if (cell) cell.classList.remove('has-image');
-      // also handle carousel card
-      const ccard = document.querySelector(`.carousel-card[data-idx="${idx}"]`);
-      if (ccard) {
-        const imgArea = document.getElementById(`carousel-img-${idx}`);
-        if (imgArea) imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
-        const removeBtn = document.getElementById(`img-remove-${idx}`);
-        if (removeBtn) removeBtn.classList.remove('visible');
-      }
       renderCell(idx);
       if (selectedIdx === idx) selectCell(idx);
     }
 
     function removeCellImage() {
+      if (settings.layoutMode === 'carousel') {
+        const item = getCarouselEditItem();
+        if (!item) return;
+        item.image = null;
+        saveCarouselData();
+        buildGrid();
+        renderAllCarousel();
+        renderCarouselItemList();
+        if (selectedCarouselItem >= 0) selectCarouselItem(selectedCarouselItem);
+        return;
+      }
       if (selectedIdx >= 0) removeCellImageAt(selectedIdx);
+    }
+
+    // 統一的に編集対象のデータオブジェクトを返す
+    function getEditTarget() {
+      if (settings.layoutMode === 'carousel') return getCarouselEditItem();
+      if (selectedIdx >= 0) return cellData[selectedIdx];
+      return null;
+    }
+    function afterEditTarget() {
+      if (settings.layoutMode === 'carousel') {
+        saveCarouselData();
+        const tab = getCarouselCurrentTab();
+        if (selectedCarouselItem >= 0 && tab.items[selectedCarouselItem]) {
+          renderCarouselCard(currentCarouselTab, selectedCarouselItem, tab.items[selectedCarouselItem]);
+        }
+        renderCarouselItemList();
+      } else if (selectedIdx >= 0) {
+        renderCell(selectedIdx);
+      }
     }
 
     // ===== テキストサイズ変更 =====
@@ -1815,6 +1916,11 @@
       if (selectedIdx >= 0) {
         cellData[selectedIdx].text = textarea.value;
         renderCell(selectedIdx);
+      }
+      const cItem = getCarouselEditItem();
+      if (cItem) {
+        cItem.text = textarea.value;
+        afterEditTarget();
       }
       
       textarea.focus();
@@ -1943,49 +2049,6 @@
     function renderCell(idx) {
       const d = cellData[idx];
 
-      if (settings.layoutMode === 'carousel') {
-        const card = document.querySelector(`.carousel-card[data-idx="${idx}"]`);
-        if (!card) return;
-        const imgArea = document.getElementById(`carousel-img-${idx}`);
-        const textArea = document.getElementById(`content-${idx}`);
-        const removeBtn = document.getElementById(`img-remove-${idx}`);
-
-        card.style.borderRadius = (d.borderRadius ?? 10) + 'px';
-        card.style.boxShadow = getShadowValue(d.shadow || 'none', d.glowColor);
-        if (d.bgColor) {
-          card.style.background = hexToRgba(d.bgColor, d.bgOpacity ?? 100);
-        } else {
-          card.style.background = '#fff';
-        }
-        card.className = card.className.replace(/\banim-\S+/g, '').trim();
-        if (!card.classList.contains('carousel-card')) card.classList.add('carousel-card');
-        if (d.animation && d.animation !== 'none') card.classList.add('anim-' + d.animation);
-
-        if (d.image && imgArea) {
-          imgArea.innerHTML = `<img src="${d.image.previewDataUrl}" alt="${escHTML(d.image.filename)}" />`;
-          if (removeBtn) removeBtn.classList.add('visible');
-        } else if (imgArea) {
-          imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
-          if (removeBtn) removeBtn.classList.remove('visible');
-        }
-
-        if (textArea) {
-          textArea.style.fontFamily = d.fontFamily;
-          textArea.style.fontSize = d.fontSize + 'px';
-          textArea.style.fontWeight = d.fontWeight;
-          textArea.style.color = d.fontColor;
-          textArea.style.textShadow = getTextGlowShadow(d.textGlow, d.textGlowColor);
-          if (d.inputMode === 'md' && d.text.trim()) {
-            textArea.className = 'cc-text-area md-rendered' + (d.writingMode === 'v' ? ' v-write' : '');
-            textArea.innerHTML = `<div class="md-inner">${parseMDWithSize(d.text)}</div>`;
-          } else {
-            textArea.className = 'cc-text-area' + (d.writingMode === 'v' ? ' v-write' : '');
-            textArea.textContent = d.text;
-          }
-        }
-        return;
-      }
-
       if (settings.layoutMode === 'card') {
         const cell = document.querySelector(`.card-cell[data-idx="${idx}"]`);
         if (!cell) return;
@@ -2083,13 +2146,7 @@
 
     function renderAll() {
       if (settings.layoutMode === 'carousel') {
-        const tabCount = settings.carouselTabCount || 3;
-        const perTab = settings.carouselItemsPerTab || 8;
-        for (let t = 0; t < tabCount; t++) {
-          for (let i = 0; i < perTab; i++) {
-            renderCell(getCarouselCellIndex(t, i));
-          }
-        }
+        renderAllCarousel();
       } else if (settings.layoutMode === 'card') {
         const count = settings.cardCount || 12;
         for (let i = 0; i < count; i++) renderCell(i);
@@ -2110,9 +2167,7 @@
       document.getElementById('cellEditor').style.display = '';
       document.getElementById('emptyEditor').style.display = 'none';
       document.getElementById('cellEditorTitle').textContent = settings.layoutMode === 'card'
-        ? `📝 カード ${idx+1}` : settings.layoutMode === 'carousel'
-        ? `📝 カルーセル ${Math.floor(idx / (settings.carouselItemsPerTab || 8))+1}-${idx % (settings.carouselItemsPerTab || 8)+1}`
-        : `📝 セル ${d.row+1}-${d.col+1}`;
+        ? `📝 カード ${idx+1}` : `📝 セル ${d.row+1}-${d.col+1}`;
 
       const imgInfo = document.getElementById('cellImageInfo');
       if (d.image) {
@@ -2158,6 +2213,10 @@
     function deselectCell() {
       document.querySelectorAll('.grid-cell.selected, .card-cell.selected, .carousel-card.selected').forEach(el => el.classList.remove('selected'));
       selectedIdx = -1;
+      if (settings.layoutMode === 'carousel') {
+        selectedCarouselItem = -1;
+        renderCarouselItemList();
+      }
       document.getElementById('cellEditor').style.display = 'none';
       document.getElementById('emptyEditor').style.display = '';
     }
@@ -2172,7 +2231,8 @@
         b.onclick = () => {
           document.querySelectorAll(`#${groupId} .toggle-btn`).forEach(x => x.classList.remove('active'));
           b.classList.add('active');
-          if (selectedIdx >= 0) { cellData[selectedIdx][field] = b.dataset.val; renderCell(selectedIdx); }
+          const target = getEditTarget();
+          if (target) { target[field] = b.dataset.val; afterEditTarget(); }
         };
       });
     }
@@ -2181,9 +2241,10 @@
       const el = document.getElementById(elId);
       const evt = el.tagName === 'TEXTAREA' ? 'input' : 'change';
       el.addEventListener(evt, () => {
-        if (selectedIdx < 0) return;
-        cellData[selectedIdx][field] = transform ? transform(el.value) : el.value;
-        renderCell(selectedIdx);
+        const target = getEditTarget();
+        if (!target) return;
+        target[field] = transform ? transform(el.value) : el.value;
+        afterEditTarget();
       });
     }
 
@@ -2196,28 +2257,24 @@
 
     // ===== カルーセル HTML エクスポート =====
     function exportCarouselHTML() {
-      const title = settings.exportTitle || settings.carouselNavTitle || 'カルーセルページ';
-      const navTitle = settings.carouselNavTitle || '';
-      const navSub = settings.carouselNavSub || '';
-      const navColor = settings.carouselNavColor || '#111111';
-      const tabCount = settings.carouselTabCount || 3;
-      const perTab = settings.carouselItemsPerTab || 8;
-      const cols = settings.carouselGridCols || 2;
-      const names = settings.carouselTabNames || [];
+      const title = settings.exportTitle || carouselData.navTitle || 'カルーセルページ';
+      const navTitle = carouselData.navTitle || '';
+      const navSub = carouselData.navSub || '';
+      const navColor = carouselData.navColor || '#111111';
+      const cols = carouselData.gridCols || 2;
 
       // Build data JSON for export
       const exportData = {
-        navTitle, navSub, navColor, tabCount, perTab, cols,
+        navTitle, navSub, navColor, cols,
         tabs: []
       };
-      for (let t = 0; t < tabCount; t++) {
-        const tab = { name: names[t] || `タブ${t+1}`, items: [] };
-        for (let i = 0; i < perTab; i++) {
-          const d = cellData[getCarouselCellIndex(t, i)];
-          if (!d.image && !d.text.trim()) continue;
+      carouselData.tabs.forEach(tab => {
+        const exportTab = { name: tab.name || 'タブ', items: [] };
+        (tab.items || []).forEach(d => {
+          if (!d.image && !(d.text && d.text.trim())) return;
           const item = {};
           if (d.image) item.img = d.image.exportPath;
-          if (d.text.trim()) {
+          if (d.text && d.text.trim()) {
             item.text = d.text;
             item.inputMode = d.inputMode;
             item.fontFamily = d.fontFamily;
@@ -2231,10 +2288,10 @@
           if (d.shadow && d.shadow !== 'none') { item.shadow = d.shadow; item.glowColor = d.glowColor; }
           if (d.textGlow && d.textGlow !== 'none') { item.textGlow = d.textGlow; item.textGlowColor = d.textGlowColor; }
           if (d.animation && d.animation !== 'none') item.animation = d.animation;
-          tab.items.push(item);
-        }
-        exportData.tabs.push(tab);
-      }
+          exportTab.items.push(item);
+        });
+        exportData.tabs.push(exportTab);
+      });
 
       const safeData = JSON.stringify(exportData);
 
@@ -2288,6 +2345,8 @@
   .card-img{height:100px;overflow:hidden;background:rgba(0,0,0,.03)}
   .card-img img{width:100%;height:100%;object-fit:cover;display:block}
   .card-text{padding:10px;flex:1;line-height:1.4;word-break:break-word;overflow:hidden}
+  .card-text.v-write{writing-mode:vertical-rl;min-height:240px;overflow-x:auto}
+  .card.has-vwrite{min-height:260px}
   .md-rendered{white-space:normal} .md-rendered .md-inner{width:100%}
   .md-rendered h1{font-size:1.4em;font-weight:700;margin:0.2em 0}
   .md-rendered h2{font-size:1.2em;font-weight:700;margin:0.2em 0}
@@ -2368,8 +2427,9 @@ function render(){
         if(it.fontWeight)ts+="font-weight:"+it.fontWeight+";";
         if(it.fontColor)ts+="color:"+it.fontColor+";";
         if(it.textGlow&&it.textGlow!=="none")ts+="text-shadow:"+tglow(it.textGlow,it.textGlowColor)+";";
-        if(it.writingMode==="v")ts+="writing-mode:vertical-rl;";
-        const mdCls=it.inputMode==="md"?" md-rendered":"";
+        const vWrite=it.writingMode==="v";
+        if(vWrite)card.classList.add("has-vwrite");
+        const mdCls=(it.inputMode==="md"?" md-rendered":"")+(vWrite?" v-write":"");
         const content=it.inputMode==="md"?'<div class="md-inner">'+parseMD(it.text)+'</div>':esc(it.text).replace(/\\n/g,"<br>");
         card.innerHTML+='<div class="card-text'+mdCls+'" style="'+ts+'">'+content+'</div>'
       }
@@ -2430,8 +2490,9 @@ document.querySelectorAll(".anim-clickFade").forEach(el=>{el.addEventListener("c
           cardsHTML += '      <div class="card-img"><img src="' + escHTML(d.image.exportPath) + '" alt="' + escHTML(d.image.filename) + '" /></div>\n';
         }
         if (d.text.trim()) {
-          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + (d.textGlow && d.textGlow !== 'none' ? 'text-shadow:' + getTextGlowShadow(d.textGlow, d.textGlowColor) + ';' : '') + (d.writingMode === 'v' ? 'writing-mode:vertical-rl;' : '');
-          const mdCls = d.inputMode === 'md' ? ' md-rendered' : '';
+          const vWrite = d.writingMode === 'v';
+          const ts = 'font-family:' + d.fontFamily + ';font-size:' + d.fontSize + 'px;font-weight:' + d.fontWeight + ';color:' + d.fontColor + ';' + (d.textGlow && d.textGlow !== 'none' ? 'text-shadow:' + getTextGlowShadow(d.textGlow, d.textGlowColor) + ';' : '');
+          const mdCls = (d.inputMode === 'md' ? ' md-rendered' : '') + (vWrite ? ' v-write' : '');
           const content = d.inputMode === 'md' ? '<div class="md-inner">' + parseMDWithSize(d.text) + '</div>' : escHTML(d.text).replace(/\n/g,'<br>');
           cardsHTML += '      <div class="card-text' + mdCls + '" style="' + ts + '">' + content + '</div>\n';
         }
@@ -2456,6 +2517,7 @@ document.querySelectorAll(".anim-clickFade").forEach(el=>{el.addEventListener("c
         + '    .card-img{ flex:0 0 60%; overflow:hidden; }\n'
         + '    .card-img img{ width:100%; height:100%; object-fit:cover; display:block; }\n'
         + '    .card-text{ flex:1; padding:12px; line-height:1.5; word-break:break-word; overflow:hidden; }\n'
+        + '    .card-text.v-write{ writing-mode:vertical-rl; overflow-x:auto; }\n'
         + '    .md-rendered{ white-space:normal; } .md-rendered .md-inner{ width:100%; }\n'
         + '    .md-rendered h1{ font-size:1.4em; font-weight:700; margin:0.2em 0; }\n'
         + '    .md-rendered h2{ font-size:1.2em; font-weight:700; margin:0.2em 0; }\n'
@@ -2650,11 +2712,15 @@ ${cellsHTML}  </div>
 
     // ===== アニメーションプレビュー =====
     function previewAnimation() {
-      if (selectedIdx < 0) return;
-      const d = cellData[selectedIdx];
-      if (!d.animation || d.animation === 'none') return;
-      const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : settings.layoutMode === 'carousel' ? '.carousel-card' : '.grid-cell';
-      const cell = document.querySelector(`${cellSelector}[data-idx="${selectedIdx}"]`);
+      const d = getEditTarget();
+      if (!d || !d.animation || d.animation === 'none') return;
+      let cell;
+      if (settings.layoutMode === 'carousel') {
+        cell = document.querySelector(`.carousel-card[data-tab="${currentCarouselTab}"][data-item="${selectedCarouselItem}"]`);
+      } else {
+        const cellSelector = settings.layoutMode === 'card' ? '.card-cell' : '.grid-cell';
+        cell = document.querySelector(`${cellSelector}[data-idx="${selectedIdx}"]`);
+      }
       if (!cell) return;
       if (d.animation === 'clickFade') {
         cell.classList.add('faded');
@@ -2674,7 +2740,10 @@ ${cellsHTML}  </div>
       );
       document.getElementById('cardSettings').style.display = mode === 'card' ? '' : 'none';
       document.getElementById('carouselSettings').style.display = mode === 'carousel' ? '' : 'none';
-      if (mode === 'carousel') renderCarouselTabNames();
+      if (mode === 'carousel') {
+        loadCarouselData();
+        renderCarouselSidebar();
+      }
       saveSettings();
       buildGrid();
       renderAll();
@@ -2691,47 +2760,157 @@ ${cellsHTML}  </div>
 
     // ===== カルーセル管理 =====
     let currentCarouselTab = 0;
+    let selectedCarouselItem = -1;
 
-    function renderCarouselTabNames() {
-      const container = document.getElementById('carouselTabNames');
-      if (!container) return;
-      const count = settings.carouselTabCount || 3;
-      const names = settings.carouselTabNames || [];
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const row = document.createElement('div');
-        row.className = 'path-row';
-        row.style.marginBottom = '6px';
-        row.innerHTML = `<label style="min-width:60px;">タブ${i+1}</label>
-          <input type="text" class="carousel-tn-input" data-idx="${i}" value="${escHTML(names[i] || `タブ${i+1}`)}" oninput="saveSettings(); buildGrid(); renderAll();" />`;
-        container.appendChild(row);
+    // 独立したカルーセルデータ
+    let carouselData = {
+      navTitle: 'モバイルダッシュボード',
+      navSub: 'すぐ下でカテゴリを切替',
+      navColor: '#111111',
+      gridCols: 2,
+      tabs: [
+        { name: 'ホーム', items: [] },
+        { name: '作業', items: [] },
+        { name: '設定', items: [] },
+      ]
+    };
+
+    function newCarouselItem() {
+      return {
+        text: '',
+        inputMode: 'plain',
+        writingMode: 'h',
+        hAlign: 'left',
+        vAlign: 'middle',
+        fontFamily: "'Noto Sans JP', sans-serif",
+        fontSize: 14,
+        fontWeight: '400',
+        fontColor: '#333333',
+        bgColor: '',
+        bgOpacity: 100,
+        borderRadius: 10,
+        shadow: 'none',
+        glowColor: '#e94560',
+        textGlow: 'none',
+        textGlowColor: '#00c8ff',
+        animation: 'none',
+        image: null,
+      };
+    }
+
+    function saveCarouselData() {
+      localStorage.setItem('blogEditorCarousel', JSON.stringify(carouselData));
+    }
+    function loadCarouselData() {
+      try {
+        const raw = localStorage.getItem('blogEditorCarousel');
+        if (raw) carouselData = JSON.parse(raw);
+      } catch(e) {}
+    }
+
+    function getCarouselCurrentTab() {
+      return carouselData.tabs[currentCarouselTab] || carouselData.tabs[0];
+    }
+
+    function updateCarouselNav() {
+      carouselData.navTitle = document.getElementById('cNavTitle').value;
+      carouselData.navSub = document.getElementById('cNavSub').value;
+      carouselData.navColor = document.getElementById('cNavColor').value;
+      carouselData.gridCols = parseInt(document.getElementById('cGridCols').value) || 2;
+      saveCarouselData();
+      buildGrid();
+      renderAllCarousel();
+    }
+
+    function changeCarouselTabCount() {
+      const count = parseInt(document.getElementById('cTabCount').value) || 3;
+      while (carouselData.tabs.length < count) {
+        carouselData.tabs.push({ name: `タブ${carouselData.tabs.length + 1}`, items: [] });
       }
+      while (carouselData.tabs.length > count) {
+        carouselData.tabs.pop();
+      }
+      if (currentCarouselTab >= count) currentCarouselTab = 0;
+      saveCarouselData();
+      buildGrid();
+      renderAllCarousel();
+      renderCarouselSidebar();
     }
 
-    function applyCarouselTabCount() {
-      const val = parseInt(document.getElementById('carouselTabCount').value) || 3;
-      settings.carouselTabCount = val;
-      const names = settings.carouselTabNames || [];
-      while (names.length < val) names.push(`タブ${names.length+1}`);
-      settings.carouselTabNames = names.slice(0, val);
-      if (currentCarouselTab >= val) currentCarouselTab = 0;
-      renderCarouselTabNames();
-      saveSettings();
-      buildGrid();
-      renderAll();
+    function renderCarouselSidebar() {
+      // タブセグメント
+      const seg = document.getElementById('cTabSeg');
+      seg.innerHTML = '';
+      carouselData.tabs.forEach((tab, i) => {
+        const btn = document.createElement('button');
+        btn.style.cssText = 'flex:1;padding:6px 0;border:none;font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;text-align:center;' +
+          (i > 0 ? 'border-left:1px solid var(--border);' : '');
+        btn.style.background = i === currentCarouselTab ? 'var(--accent)' : 'var(--bg-primary)';
+        btn.style.color = i === currentCarouselTab ? '#fff' : 'var(--text-dim)';
+        btn.textContent = tab.name || `タブ${i + 1}`;
+        btn.onclick = () => { switchCarouselTab(i); };
+        seg.appendChild(btn);
+      });
+
+      // タブ名
+      const currentTab = getCarouselCurrentTab();
+      document.getElementById('cTabName').value = currentTab.name || '';
+
+      // UI値同期
+      document.getElementById('cNavTitle').value = carouselData.navTitle || '';
+      document.getElementById('cNavSub').value = carouselData.navSub || '';
+      document.getElementById('cNavColor').value = carouselData.navColor || '#111111';
+      document.getElementById('cGridCols').value = carouselData.gridCols || 2;
+      document.getElementById('cTabCount').value = carouselData.tabs.length;
+
+      // アイテムリスト
+      renderCarouselItemList();
     }
 
-    function updateCarouselItemCount() {
-      const val = parseInt(document.getElementById('carouselItemsPerTab').value) || 8;
-      settings.carouselItemsPerTab = Math.max(1, Math.min(24, val));
-      document.getElementById('carouselItemsPerTab').value = settings.carouselItemsPerTab;
-      saveSettings();
+    function renderCarouselItemList() {
+      const list = document.getElementById('cItemList');
+      if (!list) return;
+      list.innerHTML = '';
+      const tab = getCarouselCurrentTab();
+      if (!tab.items || tab.items.length === 0) {
+        list.innerHTML = '<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:12px;">アイテムなし。「＋追加」で作成</div>';
+        return;
+      }
+      tab.items.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'c-item' + (i === selectedCarouselItem ? ' selected' : '');
+        const title = item.text ? item.text.substring(0, 30) : (item.image ? `📷 ${item.image.filename}` : '（空）');
+        div.innerHTML = `
+          <span style="font-size:10px;color:var(--text-dim);min-width:18px;">${i + 1}</span>
+          <div style="flex:1;min-width:0;">
+            <div class="c-item-title">${escHTML(title)}</div>
+          </div>
+          <div class="c-item-btns">
+            <button onclick="event.stopPropagation();moveCarouselItem(${i},-1)" title="上へ">↑</button>
+            <button onclick="event.stopPropagation();moveCarouselItem(${i},1)" title="下へ">↓</button>
+            <button onclick="event.stopPropagation();deleteCarouselItem(${i})" title="削除" style="color:#e74c3c;">✕</button>
+          </div>
+        `;
+        div.onclick = () => selectCarouselItem(i);
+        list.appendChild(div);
+      });
+    }
+
+    function renameCarouselTab() {
+      const tab = getCarouselCurrentTab();
+      tab.name = document.getElementById('cTabName').value;
+      saveCarouselData();
       buildGrid();
-      renderAll();
+      renderAllCarousel();
+      // update tab segment buttons
+      const seg = document.getElementById('cTabSeg');
+      const btns = seg.querySelectorAll('button');
+      if (btns[currentCarouselTab]) btns[currentCarouselTab].textContent = tab.name || `タブ${currentCarouselTab + 1}`;
     }
 
     function switchCarouselTab(tabIdx) {
       currentCarouselTab = tabIdx;
+      selectedCarouselItem = -1;
       const track = document.querySelector('.carousel-track');
       if (track) {
         track.style.transform = `translateX(-${tabIdx * 100}%)`;
@@ -2739,16 +2918,203 @@ ${cellsHTML}  </div>
       document.querySelectorAll('.carousel-tab-btn').forEach((btn, i) => {
         btn.classList.toggle('active', i === tabIdx);
       });
-      // update editor tab indicator
-      document.querySelectorAll('.carousel-tab-editor button').forEach((btn, i) => {
-        btn.classList.toggle('active', i === tabIdx);
-      });
-      deselectCell();
+      hideCarouselItemEditor();
+      renderCarouselSidebar();
     }
 
-    function getCarouselCellIndex(tabIdx, itemIdx) {
-      const perTab = settings.carouselItemsPerTab || 8;
-      return tabIdx * perTab + itemIdx;
+    function addCarouselItem() {
+      const tab = getCarouselCurrentTab();
+      tab.items.push(newCarouselItem());
+      saveCarouselData();
+      buildGrid();
+      renderAllCarousel();
+      renderCarouselItemList();
+      selectCarouselItem(tab.items.length - 1);
+    }
+
+    function duplicateCarouselItem() {
+      if (selectedCarouselItem < 0) return;
+      const tab = getCarouselCurrentTab();
+      const src = tab.items[selectedCarouselItem];
+      const dup = JSON.parse(JSON.stringify(src));
+      tab.items.splice(selectedCarouselItem + 1, 0, dup);
+      saveCarouselData();
+      buildGrid();
+      renderAllCarousel();
+      renderCarouselItemList();
+      selectCarouselItem(selectedCarouselItem + 1);
+    }
+
+    function deleteCarouselItem(i) {
+      const tab = getCarouselCurrentTab();
+      tab.items.splice(i, 1);
+      if (selectedCarouselItem >= tab.items.length) selectedCarouselItem = tab.items.length - 1;
+      if (selectedCarouselItem < 0) hideCarouselItemEditor();
+      saveCarouselData();
+      buildGrid();
+      renderAllCarousel();
+      renderCarouselItemList();
+      if (selectedCarouselItem >= 0) selectCarouselItem(selectedCarouselItem);
+    }
+
+    function moveCarouselItem(i, dir) {
+      const tab = getCarouselCurrentTab();
+      const newIdx = i + dir;
+      if (newIdx < 0 || newIdx >= tab.items.length) return;
+      [tab.items[i], tab.items[newIdx]] = [tab.items[newIdx], tab.items[i]];
+      if (selectedCarouselItem === i) selectedCarouselItem = newIdx;
+      else if (selectedCarouselItem === newIdx) selectedCarouselItem = i;
+      saveCarouselData();
+      buildGrid();
+      renderAllCarousel();
+      renderCarouselItemList();
+    }
+
+    function selectCarouselItem(i) {
+      selectedCarouselItem = i;
+      renderCarouselItemList();
+      const tab = getCarouselCurrentTab();
+      const item = tab.items[i];
+      if (!item) return;
+
+      // Show cell editor and populate
+      document.getElementById('cellEditor').style.display = '';
+      document.getElementById('emptyEditor').style.display = 'none';
+      document.getElementById('cellEditorTitle').textContent = `📝 ${getCarouselCurrentTab().name} #${i + 1}`;
+
+      const imgInfo = document.getElementById('cellImageInfo');
+      if (item.image) {
+        imgInfo.style.display = '';
+        document.getElementById('cellImageThumb').src = item.image.previewDataUrl;
+        document.getElementById('cellImageName').textContent = item.image.filename;
+        document.getElementById('cellImagePath').textContent = item.image.exportPath;
+      } else {
+        imgInfo.style.display = 'none';
+      }
+
+      document.getElementById('cellText').value = item.text || '';
+      setToggle('inputMode', item.inputMode || 'plain');
+      setToggle('writingMode', item.writingMode || 'h');
+      setToggle('hAlign', item.hAlign || 'left');
+      setToggle('vAlign', item.vAlign || 'middle');
+      document.getElementById('fontFamily').value = item.fontFamily || "'Noto Sans JP', sans-serif";
+      document.getElementById('fontSize').value = item.fontSize || 14;
+      document.getElementById('fontWeight').value = item.fontWeight || '400';
+      document.getElementById('fontColor').value = item.fontColor || '#333333';
+      document.getElementById('cellBgColor').value = item.bgColor || '#ffffff';
+      document.getElementById('cellBgOpacity').value = item.bgOpacity ?? 100;
+      document.getElementById('bgOpacityVal').textContent = item.bgOpacity ?? 100;
+      document.getElementById('cellBorderRadius').value = item.borderRadius ?? 10;
+      document.getElementById('borderRadiusVal').textContent = item.borderRadius ?? 10;
+      document.getElementById('cellShadow').value = item.shadow || 'none';
+      document.getElementById('cellGlowColor').value = item.glowColor || '#e94560';
+      document.getElementById('glowColorRow').style.display = item.shadow === 'glow' ? '' : 'none';
+      document.getElementById('textGlow').value = item.textGlow || 'none';
+      document.getElementById('textGlowColor').value = item.textGlowColor || '#00c8ff';
+      document.getElementById('textGlowColorRow').style.display = (item.textGlow && item.textGlow !== 'none') ? '' : 'none';
+      document.getElementById('cellAnimation').value = item.animation || 'none';
+
+      const isMd = item.inputMode === 'md';
+      document.getElementById('textSizeTools').style.display = isMd ? '' : 'none';
+      document.getElementById('mdHelp').style.display = isMd ? '' : 'none';
+      document.getElementById('cellText').placeholder = isMd ? '# 見出し\n**太字** *斜体*' : 'テキストを入力…';
+
+      // highlight card in preview
+      document.querySelectorAll('.carousel-card.selected').forEach(el => el.classList.remove('selected'));
+      const cardEl = document.querySelector(`.carousel-card[data-tab="${currentCarouselTab}"][data-item="${i}"]`);
+      if (cardEl) cardEl.classList.add('selected');
+    }
+
+    function hideCarouselItemEditor() {
+      selectedCarouselItem = -1;
+      document.getElementById('cellEditor').style.display = 'none';
+      document.getElementById('emptyEditor').style.display = '';
+      document.querySelectorAll('.carousel-card.selected').forEach(el => el.classList.remove('selected'));
+    }
+
+    // Get carousel item data for current editor state (called by existing bindInput etc)
+    function getCarouselEditItem() {
+      if (settings.layoutMode !== 'carousel' || selectedCarouselItem < 0) return null;
+      const tab = getCarouselCurrentTab();
+      return tab.items[selectedCarouselItem] || null;
+    }
+
+    function carouselImageDrop(tabIdx, itemIdx, dataTransfer) {
+      const files = dataTransfer.files;
+      if (files.length === 0) return;
+      const file = files[0];
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const basePath = getDefaultPath();
+        const tab = carouselData.tabs[tabIdx];
+        if (!tab || !tab.items[itemIdx]) return;
+        tab.items[itemIdx].image = {
+          filename: file.name,
+          exportPath: basePath + file.name,
+          previewDataUrl: e.target.result,
+        };
+        saveCarouselData();
+        buildGrid();
+        renderAllCarousel();
+        if (currentCarouselTab === tabIdx) {
+          selectCarouselItem(itemIdx);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderAllCarousel() {
+      // called after buildGrid; cards are already built, just fill content
+      carouselData.tabs.forEach((tab, t) => {
+        tab.items.forEach((item, i) => {
+          renderCarouselCard(t, i, item);
+        });
+      });
+    }
+
+    function renderCarouselCard(tabIdx, itemIdx, item) {
+      const card = document.querySelector(`.carousel-card[data-tab="${tabIdx}"][data-item="${itemIdx}"]`);
+      if (!card) return;
+      const imgArea = card.querySelector('.cc-img-area');
+      const textArea = card.querySelector('.cc-text-area');
+      const removeBtn = card.querySelector('.image-remove-btn');
+
+      card.style.borderRadius = (item.borderRadius ?? 10) + 'px';
+      card.style.boxShadow = getShadowValue(item.shadow || 'none', item.glowColor);
+      if (item.bgColor) {
+        card.style.background = hexToRgba(item.bgColor, item.bgOpacity ?? 100);
+      } else {
+        card.style.background = '#fff';
+      }
+      card.className = card.className.replace(/\banim-\S+/g, '').trim();
+      if (!card.classList.contains('carousel-card')) card.classList.add('carousel-card');
+      if (item.animation && item.animation !== 'none') card.classList.add('anim-' + item.animation);
+      // restore selected
+      if (tabIdx === currentCarouselTab && itemIdx === selectedCarouselItem) card.classList.add('selected');
+
+      if (item.image && imgArea) {
+        imgArea.innerHTML = `<img src="${item.image.previewDataUrl}" alt="${escHTML(item.image.filename)}" />`;
+        if (removeBtn) removeBtn.classList.add('visible');
+      } else if (imgArea) {
+        imgArea.innerHTML = '<div class="cc-img-placeholder">🖼</div>';
+        if (removeBtn) removeBtn.classList.remove('visible');
+      }
+
+      if (textArea) {
+        textArea.style.fontFamily = item.fontFamily || "'Noto Sans JP', sans-serif";
+        textArea.style.fontSize = (item.fontSize || 14) + 'px';
+        textArea.style.fontWeight = item.fontWeight || '400';
+        textArea.style.color = item.fontColor || '#333333';
+        textArea.style.textShadow = getTextGlowShadow(item.textGlow, item.textGlowColor);
+        if (item.inputMode === 'md' && item.text && item.text.trim()) {
+          textArea.className = 'cc-text-area md-rendered' + (item.writingMode === 'v' ? ' v-write' : '');
+          textArea.innerHTML = `<div class="md-inner">${parseMDWithSize(item.text)}</div>`;
+        } else {
+          textArea.className = 'cc-text-area' + (item.writingMode === 'v' ? ' v-write' : '');
+          textArea.textContent = item.text || '';
+        }
+      }
     }
 
     // ===== 初期化 =====
@@ -2768,13 +3134,8 @@ ${cellsHTML}  </div>
       document.getElementById('cardCount').value = settings.cardCount || 12;
 
       // Carousel settings
-      document.getElementById('carouselTabCount').value = settings.carouselTabCount || 3;
-      document.getElementById('carouselGridCols').value = settings.carouselGridCols || 2;
-      document.getElementById('carouselItemsPerTab').value = settings.carouselItemsPerTab || 8;
-      document.getElementById('carouselNavTitle').value = settings.carouselNavTitle || '';
-      document.getElementById('carouselNavSub').value = settings.carouselNavSub || '';
-      document.getElementById('carouselNavColor').value = settings.carouselNavColor || '#111111';
-      if (mode === 'carousel') renderCarouselTabNames();
+      loadCarouselData();
+      if (mode === 'carousel') renderCarouselSidebar();
 
       renderPathList();
       updateCurrentPathDisplay();
@@ -2791,9 +3152,10 @@ ${cellsHTML}  </div>
         b.onclick = () => {
           imBtns.forEach(x => x.classList.remove('active'));
           b.classList.add('active');
-          if (selectedIdx >= 0) {
-            cellData[selectedIdx].inputMode = b.dataset.val;
-            renderCell(selectedIdx);
+          const target = getEditTarget();
+          if (target) {
+            target.inputMode = b.dataset.val;
+            afterEditTarget();
             const isMarkdown = b.dataset.val === 'md';
             document.getElementById('textSizeTools').style.display = isMarkdown ? '' : 'none';
             document.getElementById('mdHelp').style.display = isMarkdown ? '' : 'none';
@@ -2810,21 +3172,24 @@ ${cellsHTML}  </div>
       bindInput('fontColor', 'fontColor');
 
       document.getElementById('cellBgColor').addEventListener('input', (e) => {
-        if (selectedIdx < 0) return;
-        cellData[selectedIdx].bgColor = e.target.value;
-        renderCell(selectedIdx);
+        const target = getEditTarget();
+        if (!target) return;
+        target.bgColor = e.target.value;
+        afterEditTarget();
       });
       document.getElementById('cellBgOpacity').addEventListener('input', (e) => {
-        if (selectedIdx < 0) return;
-        cellData[selectedIdx].bgOpacity = parseInt(e.target.value);
+        const target = getEditTarget();
+        if (!target) return;
+        target.bgOpacity = parseInt(e.target.value);
         document.getElementById('bgOpacityVal').textContent = e.target.value;
-        renderCell(selectedIdx);
+        afterEditTarget();
       });
       document.getElementById('cellBorderRadius').addEventListener('input', (e) => {
-        if (selectedIdx < 0) return;
-        cellData[selectedIdx].borderRadius = parseInt(e.target.value);
+        const target = getEditTarget();
+        if (!target) return;
+        target.borderRadius = parseInt(e.target.value);
         document.getElementById('borderRadiusVal').textContent = e.target.value;
-        renderCell(selectedIdx);
+        afterEditTarget();
       });
       bindInput('cellShadow', 'shadow');
       document.getElementById('cellShadow').addEventListener('change', () => {
@@ -2832,9 +3197,10 @@ ${cellsHTML}  </div>
         document.getElementById('glowColorRow').style.display = isGlow ? '' : 'none';
       });
       document.getElementById('cellGlowColor').addEventListener('input', (e) => {
-        if (selectedIdx < 0) return;
-        cellData[selectedIdx].glowColor = e.target.value;
-        renderCell(selectedIdx);
+        const target = getEditTarget();
+        if (!target) return;
+        target.glowColor = e.target.value;
+        afterEditTarget();
       });
       bindInput('textGlow', 'textGlow');
       document.getElementById('textGlow').addEventListener('change', () => {
@@ -2842,9 +3208,10 @@ ${cellsHTML}  </div>
         document.getElementById('textGlowColorRow').style.display = hasGlow ? '' : 'none';
       });
       document.getElementById('textGlowColor').addEventListener('input', (e) => {
-        if (selectedIdx < 0) return;
-        cellData[selectedIdx].textGlowColor = e.target.value;
-        renderCell(selectedIdx);
+        const target = getEditTarget();
+        if (!target) return;
+        target.textGlowColor = e.target.value;
+        afterEditTarget();
       });
       bindInput('cellAnimation', 'animation');
 
